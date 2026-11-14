@@ -1,0 +1,30 @@
+[
+  {
+    "kode": "08968604170",
+    "nama": "Indomie Goreng Jumbo",
+    "varian": "129 gr",
+    "harga": 4500,
+    "stok": 24
+  },
+  {
+    "kode": "8998866200899",
+    "nama": "Mie Sukses's Isi 2 Ayam Bawang",
+    "varian": "Isi 2",
+    "harga": 4500,
+    "stok": 15
+  },
+  {
+    "kode": "8996001302007",
+    "nama": "Pop Mie Goreng",
+    "varian": "Cup 80 gr",
+    "harga": 5500,
+    "stok": 12
+  },
+  {
+    "kode": "8996001301017",
+    "nama": "Pop Mie Ayam",
+    "varian": "Cup 75 gr",
+    "harga": 5500,
+    "stok": 0
+  }
+]

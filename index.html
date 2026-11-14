@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Katalog Online - KIOS DIAN</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 90px; }
+    header { background: linear-gradient(135deg, #0f172a, #1e3a8a); color: white; padding: 20px 16px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    header h1 { font-size: 22px; letter-spacing: 0.5px; margin-bottom: 4px; }
+    header p { font-size: 13px; color: #cbd5e1; }
+    .container { max-width: 650px; margin: 0 auto; padding: 16px; }
+    .search-box { position: sticky; top: 10px; z-index: 10; margin-bottom: 16px; }
+    .search-box input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); outline: none; }
+    .search-box input:focus { border-color: #2563eb; }
+    .grid-produk { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
+    .card { background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #e2e8f0; }
+    .card.habis { opacity: 0.65; background: #f8fafc; }
+    .nama-produk { font-weight: 600; font-size: 14px; color: #0f172a; margin-bottom: 4px; line-height: 1.3; }
+    .varian { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+    .harga { font-weight: 700; font-size: 15px; color: #16a34a; margin-bottom: 6px; }
+    .stok-badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 600; margin-bottom: 10px; width: fit-content; }
+    .stok-ada { background: #dcfce7; color: #166534; }
+    .stok-kosong { background: #fee2e2; color: #991b1b; }
+    .btn-tambah { background: #2563eb; color: white; border: none; padding: 9px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; width: 100%; }
+    .btn-tambah:disabled { background: #94a3b8; cursor: not-allowed; }
+    .qty-control { display: flex; align-items: center; justify-content: space-between; background: #eff6ff; border-radius: 8px; padding: 4px; border: 1px solid #bfdbfe; }
+    .qty-control button { background: #2563eb; color: white; border: none; width: 28px; height: 28px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; }
+    .qty-control span { font-weight: 700; font-size: 14px; color: #1e3a8a; }
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; color: white; padding: 14px 16px; display: none; justify-content: space-between; align-items: center; box-shadow: 0 -4px 15px rgba(0,0,0,0.2); z-index: 20; }
+    .cart-bar.aktif { display: flex; }
+    .cart-info { font-size: 13px; }
+    .cart-total { font-size: 17px; font-weight: 700; color: #4ade80; }
+    .btn-wa { background: #22c55e; color: white; border: none; padding: 11px 18px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 30; align-items: flex-end; justify-content: center; }
+    .modal.buka { display: flex; }
+    .modal-content { background: white; width: 100%; max-width: 650px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 14px; }
+    .item-keranjang { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; }
+    .input-pelanggan { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 8px; margin-bottom: 12px; font-size: 14px; }
+    .btn-kirim-wa { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>KIOS DIAN</h1>
+    <p>Jl. Tubagus Ismail Bawah No. 32 • Katalog & Pesan Online</p>
+  </header>
+
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="inputCari" placeholder="Cari nama barang di Kios Dian..." onkeyup="filterProduk()">
+    </div>
+    <div id="daftarProduk" class="grid-produk">Memuat katalog barang...</div>
+  </div>
+
+  <div id="cartBar" class="cart-bar">
+    <div class="cart-info">
+      <div id="jumlahItem">0 Barang dipilih</div>
+      <div id="totalHarga" class="cart-total">Rp 0</div>
+    </div>
+    <button class="btn-wa" onclick="bukaModal()">Lihat Keranjang & Pesan</button>
+  </div>
+
+  <div id="modalKeranjang" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Rincian Pesanan Anda</h3>
+        <button onclick="tutupModal()" style="background:none;border:none;font-size:22px;cursor:pointer;">&times;</button>
+      </div>
+      <div id="listKeranjang"></div>
+      <div style="margin-top:14px;">
+        <label style="font-size:13px;font-weight:600;">Nama Pemesan:</label>
+        <input type="text" id="namaPemesan" class="input-pelanggan" placeholder="Masukkan nama Anda...">
+        <label style="font-size:13px;font-weight:600;">Catatan / Alamat Antar (Opsional):</label>
+        <input type="text" id="catatanPesanan" class="input-pelanggan" placeholder="Misal: Diambil ke toko / Antar ke gang sebelah...">
+      </div>
+      <button class="btn-kirim-wa" onclick="kirimKeWhatsApp()">Kirim Pesanan ke WhatsApp Kios Dian</button>
+    </div>
+  </div>
+  <script>
+    const NOMOR_WA_TOKO = "6281395295203";
+    let semuaProduk = [];
+    let keranjang = {};
+
+    async function muatDataProduk() {
+      try {
+        const res = await fetch('produk.json?v=' + new Date().getTime());
+        semuaProduk = await res.json();
+        tampilkanProduk(semuaProduk);
+      } catch (e) {
+        document.getElementById('daftarProduk').innerHTML = "<p>Gagal memuat data produk.</p>";
+      }
+    }
+
+    function formatRupiah(angka) {
+      return "Rp " + angka.toLocaleString('id-ID');
+    }
+
+    function tampilkanProduk(data) {
+      const wadah = document.getElementById('daftarProduk');
+      if (data.length === 0) {
+        wadah.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#64748b;'>Barang tidak ditemukan.</p>";
+        return;
+      }
+      wadah.innerHTML = data.map(p => {
+        const qty = keranjang[p.kode] ? keranjang[p.kode].qty : 0;
+        const habis = p.stok <= 0;
+        return `
+          <div class="card ${habis ? 'habis' : ''}">
+            <div>
+              <div class="nama-produk">${p.nama}</div>
+              <div class="varian">${p.varian || '-'}</div>
+              <div class="harga">${formatRupiah(p.harga)}</div>
+              <span class="stok-badge ${habis ? 'stok-kosong' : 'stok-ada'}">
+                ${habis ? 'Stok Habis' : 'Sisa Stok: ' + p.stok}
+              </span>
+            </div>
+            <div>
+              ${habis ? `<button class="btn-tambah" disabled>Habis</button>` :
+                qty === 0 ? `<button class="btn-tambah" onclick="ubahQty('${p.kode}', 1)">+ Tambah</button>` :
+                `<div class="qty-control">
+                  <button onclick="ubahQty('${p.kode}', -1)">-</button>
+                  <span>${qty}</span>
+                  <button onclick="ubahQty('${p.kode}', 1)">+</button>
+                </div>`
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterProduk() {
+      const kata = document.getElementById('inputCari').value.toLowerCase();
+      const hasil = semuaProduk.filter(p => p.nama.toLowerCase().includes(kata) || (p.varian && p.varian.toLowerCase().includes(kata)));
+      tampilkanProduk(hasil);
+    }
+
+    function ubahQty(kode, delta) {
+      const produk = semuaProduk.find(p => p.kode === kode);
+      if (!produk) return;
+      const qtySekarang = keranjang[kode] ? keranjang[kode].qty : 0;
+      const qtyBaru = qtySekarang + delta;
+      if (qtyBaru > produk.stok) {
+        alert("Maaf, stok barang ini hanya tersisa " + produk.stok);
+        return;
+      }
+      if (qtyBaru <= 0) {
+        delete keranjang[kode];
+      } else {
+        keranjang[kode] = { ...produk, qty: qtyBaru };
+      }
+      filterProduk();
+      perbaruiBarKeranjang();
+    }
+
+    function perbaruiBarKeranjang() {
+      const daftar = Object.values(keranjang);
+      const totalItem = daftar.reduce((sum, item) => sum + item.qty, 0);
+      const totalHarga = daftar.reduce((sum, item) => sum + (item.harga * item.qty), 0);
+      const bar = document.getElementById('cartBar');
+      if (totalItem > 0) {
+        bar.classList.add('aktif');
+        document.getElementById('jumlahItem').innerText = totalItem + " Barang dipilih";
+        document.getElementById('totalHarga').innerText = formatRupiah(totalHarga);
+      } else {
+        bar.classList.remove('aktif');
+        tutupModal();
+      }
+    }
+
+    function bukaModal() {
+      const daftar = Object.values(keranjang);
+      let total = 0;
+      document.getElementById('listKeranjang').innerHTML = daftar.map(item => {
+        const sub = item.harga * item.qty;
+        total += sub;
+        return `
+          <div class="item-keranjang">
+            <div>
+              <div style="font-weight:600;font-size:14px;">${item.nama}</div>
+              <div style="font-size:12px;color:#64748b;">${item.qty} x ${formatRupiah(item.harga)}</div>
+            </div>
+            <div style="font-weight:700;color:#0f172a;">${formatRupiah(sub)}</div>
+          </div>
+        `;
+      }).join('') + `<div style="text-align:right;font-weight:700;font-size:16px;margin-top:12px;color:#16a34a;">Total: ${formatRupiah(total)}</div>`;
+      document.getElementById('modalKeranjang').classList.add('buka');
+    }
+
+    function tutupModal() {
+      document.getElementById('modalKeranjang').classList.remove('buka');
+    }
+
+    function kirimKeWhatsApp() {
+      const nama = document.getElementById('namaPemesan').value.trim() || "Pelanggan";
+      const catatan = document.getElementById('catatanPesanan').value.trim();
+      const daftar = Object.values(keranjang);
+      if (daftar.length === 0) return;
+
+      let total = 0;
+      let teks = `Halo *KIOS DIAN*, saya mau pesan barang berikut:\n\n`;
+      teks += `*Nama:* ${nama}\n`;
+      if (catatan) teks += `*Catatan:* ${catatan}\n`;
+      teks += `------------------------------\n`;
+
+      daftar.forEach((item, idx) => {
+        const sub = item.harga * item.qty;
+        total += sub;
+        teks += `${idx + 1}. ${item.nama} (${item.qty}x) = ${formatRupiah(sub)}\n`;
+      });
+
+      teks += `------------------------------\n`;
+      teks += `*TOTAL PESANAN: ${formatRupiah(total)}*\n\nMohon info ketersediaannya ya. Terima kasih!`;
+
+      const url = `https://wa.me{NOMOR_WA_TOKO}?text=${encodeURIComponent(teks)}`;
+      window.open(url, '_blank');
+    }
+
+    muatDataProduk();
+  </script>
+</body>
+</html>
