@@ -222,14 +222,14 @@
     </div>
   </div>
   <script>
-    const NOMOR_WA_TOKO = "6281395295203";
-    let semuaProduk = [];
-    let keranjang = {};
-    let kategoriAktif = "semua";
+    var NOMOR_WA_TOKO = "6281395295203";
+    var semuaProduk = [];
+    var keranjang = {};
+    var kategoriAktif = "semua";
 
     async function muatDataProduk() {
       try {
-        const res = await fetch('produk.json?v=' + new Date().getTime());
+        var res = await fetch('produk.json?v=' + new Date().getTime());
         semuaProduk = await res.json();
         terapkanFilter();
       } catch (e) {
@@ -238,11 +238,15 @@
     }
 
     function formatRupiah(angka) {
-      return "Rp " + angka.toLocaleString('id-ID');
+      return "Rp " + Number(angka).toLocaleString('id-ID');
     }
 
     function buatInisial(nama) {
-      return nama.split(' ').slice(0, 2).map(function(k) { return k[0] || ''; }).join('').toUpperCase();
+      var kata = String(nama).split(' ');
+      var hasil = "";
+      if (kata.length > 0 && kata[0].length > 0) hasil += kata[0].charAt(0);
+      if (kata.length > 1 && kata[1].length > 0) hasil += kata[1].charAt(0);
+      return hasil.toUpperCase() || "KD";
     }
 
     function gantiKePngAtauInisial(imgElement, kode, inisial) {
@@ -256,13 +260,16 @@
 
     function pilihKategori(kat, tombol) {
       kategoriAktif = kat;
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      var semuaTab = document.querySelectorAll('.tab-btn');
+      for (var i = 0; i < semuaTab.length; i++) {
+        semuaTab[i].classList.remove('active');
+      }
       tombol.classList.add('active');
       terapkanFilter();
     }
 
     function cocokKategori(p) {
-      const teks = (p.nama + " " + (p.varian || "")).toLowerCase();
+      var teks = (p.nama + " " + (p.varian || "")).toLowerCase();
       if (kategoriAktif === "semua") return true;
       if (kategoriAktif === "tersedia") return p.stok > 0;
       if (kategoriAktif === "minuman") return /good day|tea|kopi|coffee|extra joss|kuku bima|madurasa|vitacimin/.test(teks);
@@ -272,43 +279,45 @@
     }
 
     function terapkanFilter() {
-      const kata = document.getElementById('inputCari').value.toLowerCase();
-      const hasil = semuaProduk.filter(function(p) {
-        const cocokKata = p.nama.toLowerCase().includes(kata) || (p.varian && p.varian.toLowerCase().includes(kata));
+      var kata = document.getElementById('inputCari').value.toLowerCase();
+      var hasil = semuaProduk.filter(function(p) {
+        var cocokKata = p.nama.toLowerCase().includes(kata) || (p.varian && p.varian.toLowerCase().includes(kata));
         return cocokKata && cocokKategori(p);
       });
       tampilkanProduk(hasil);
     }
 
     function tampilkanProduk(data) {
-      const wadah = document.getElementById('daftarProduk');
+      var wadah = document.getElementById('daftarProduk');
       if (data.length === 0) {
         wadah.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#94A3B8;padding:30px 0;'>Produk tidak ditemukan pada kategori ini.</p>";
         return;
       }
-      wadah.innerHTML = data.map(function(p) {
-        const qty = keranjang[p.kode] ? keranjang[p.kode].qty : 0;
-        const habis = p.stok <= 0;
-        const inisial = buatInisial(p.nama);
-        const classCard = habis ? "card habis" : "card";
-        const classStok = habis ? "stok-pill stok-kosong" : "stok-pill stok-ada";
-        const teksStok = habis ? "Habis" : "Stok " + p.stok;
-        const varianTeks = p.varian || "Reguler";
+      var htmlSemua = "";
+      for (var i = 0; i < data.length; i++) {
+        var p = data[i];
+        var qty = keranjang[p.kode] ? keranjang[p.kode].qty : 0;
+        var habis = p.stok <= 0;
+        var inisial = buatInisial(p.nama);
+        var classCard = habis ? "card habis" : "card";
+        var classStok = habis ? "stok-pill stok-kosong" : "stok-pill stok-ada";
+        var teksStok = habis ? "Habis" : "Stok " + p.stok;
+        var varianTeks = p.varian || "Reguler";
 
-        let tombolAksi = "";
+        var tombolAksi = "";
         if (habis) {
           tombolAksi = '<button class="btn-tambah" disabled>Stok Kosong</button>';
         } else if (qty === 0) {
           tombolAksi = '<button class="btn-tambah" onclick="ubahQty(\'' + p.kode + '\', 1)">+ Keranjang</button>';
         } else {
           tombolAksi = '<div class="qty-control">' +
-            '<button onclick="ubahQty(\'' + p.kode + '\', -1)">−</button>' +
+            '<button onclick="ubahQty(\'' + p.kode + '\', -1)">-</button>' +
             '<span>' + qty + '</span>' +
             '<button onclick="ubahQty(\'' + p.kode + '\', 1)">+</button>' +
           '</div>';
         }
 
-        return '<div class="' + classCard + '">' +
+        htmlSemua += '<div class="' + classCard + '">' +
           '<div>' +
             '<div class="foto-box">' +
               '<span class="' + classStok + '">' + teksStok + '</span>' +
@@ -322,14 +331,21 @@
             tombolAksi +
           '</div>' +
         '</div>';
-      }).join('');
+      }
+      wadah.innerHTML = htmlSemua;
     }
 
     function ubahQty(kode, delta) {
-      const produk = semuaProduk.find(function(p) { return p.kode === kode; });
+      var produk = null;
+      for (var i = 0; i < semuaProduk.length; i++) {
+        if (semuaProduk[i].kode === kode) {
+          produk = semuaProduk[i];
+          break;
+        }
+      }
       if (!produk) return;
-      const qtySekarang = keranjang[kode] ? keranjang[kode].qty : 0;
-      const qtyBaru = qtySekarang + delta;
+      var qtySekarang = keranjang[kode] ? keranjang[kode].qty : 0;
+      var qtyBaru = qtySekarang + delta;
       if (qtyBaru > produk.stok) {
         alert("Maaf, stok barang ini hanya tersisa " + produk.stok);
         return;
@@ -337,17 +353,28 @@
       if (qtyBaru <= 0) {
         delete keranjang[kode];
       } else {
-        keranjang[kode] = Object.assign({}, produk, { qty: qtyBaru });
+        keranjang[kode] = {
+          kode: produk.kode,
+          nama: produk.nama,
+          varian: produk.varian,
+          harga: produk.harga,
+          stok: produk.stok,
+          qty: qtyBaru
+        };
       }
       terapkanFilter();
       perbaruiBarKeranjang();
     }
 
     function perbaruiBarKeranjang() {
-      const daftar = Object.values(keranjang);
-      const totalItem = daftar.reduce(function(sum, item) { return sum + item.qty; }, 0);
-      const totalHarga = daftar.reduce(function(sum, item) { return sum + (item.harga * item.qty); }, 0);
-      const bar = document.getElementById('cartBar');
+      var daftar = Object.values(keranjang);
+      var totalItem = 0;
+      var totalHarga = 0;
+      for (var i = 0; i < daftar.length; i++) {
+        totalItem += daftar[i].qty;
+        totalHarga += daftar[i].harga * daftar[i].qty;
+      }
+      var bar = document.getElementById('cartBar');
       if (totalItem > 0) {
         bar.classList.add('aktif');
         document.getElementById('jumlahItem').innerText = totalItem + " Item di Keranjang";
@@ -359,19 +386,21 @@
     }
 
     function bukaModal() {
-      const daftar = Object.values(keranjang);
-      let total = 0;
-      const htmlList = daftar.map(function(item) {
-        const sub = item.harga * item.qty;
+      var daftar = Object.values(keranjang);
+      var total = 0;
+      var htmlList = "";
+      for (var i = 0; i < daftar.length; i++) {
+        var item = daftar[i];
+        var sub = item.harga * item.qty;
         total += sub;
-        return '<div class="item-keranjang">' +
+        htmlList += '<div class="item-keranjang">' +
           '<div>' +
             '<div style="font-weight:700;font-size:14px;color:#F8FAFC;">' + item.nama + '</div>' +
             '<div style="font-size:12px;color:#94A3B8;">' + item.qty + ' x ' + formatRupiah(item.harga) + '</div>' +
           '</div>' +
           '<div style="font-weight:800;color:#F59E0B;">' + formatRupiah(sub) + '</div>' +
         '</div>';
-      }).join('');
+      }
 
       document.getElementById('listKeranjang').innerHTML = htmlList +
         '<div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:17px;margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);">' +
@@ -386,28 +415,45 @@
     }
 
     function kirimKeWhatsApp() {
-      const nama = document.getElementById('namaPemesan').value.trim() || "Pelanggan";
-      const catatan = document.getElementById('catatanPesanan').value.trim();
-      const daftar = Object.values(keranjang);
-      if (daftar.length === 0) return;
+      var nama = document.getElementById('namaPemesan').value.trim() || "Pelanggan";
+      var catatan = document.getElementById('catatanPesanan').value.trim();
+      var daftar = Object.values(keranjang);
+      if (daftar.length === 0) {
+        alert("Keranjang belanja masih kosong!");
+        return;
+      }
 
-      let total = 0;
-      let teks = "Halo *KIOS DIAN*, saya mau pesan barang berikut:\n\n";
-      teks += "*Nama:* " + nama + "\n";
-      if (catatan) teks += "*Info:* " + catatan + "\n";
-      teks += "------------------------------\n";
+      var total = 0;
+      var barisPesan = [
+        "Halo *KIOS DIAN*, saya mau pesan barang berikut:",
+        "",
+        "*Nama:* " + nama
+      ];
+      if (catatan) {
+        barisPesan.push("*Info:* " + catatan);
+      }
+      barisPesan.push("------------------------------");
 
-      daftar.forEach(function(item, idx) {
-        const sub = item.harga * item.qty;
+      for (var i = 0; i < daftar.length; i++) {
+        var item = daftar[i];
+        var sub = item.harga * item.qty;
         total += sub;
-        teks += (idx + 1) + ". " + item.nama + " (" + item.qty + "x) = " + formatRupiah(sub) + "\n";
-      });
+        barisPesan.push((i + 1) + ". " + item.nama + " (" + item.qty + "x) = " + formatRupiah(sub));
+      }
 
-      teks += "------------------------------\n";
-      teks += "*TOTAL PESANAN: " + formatRupiah(total) + "*\n\nMohon info ketersediaannya ya. Terima kasih!";
+      barisPesan.push("------------------------------");
+      barisPesan.push("*TOTAL PESANAN: " + formatRupiah(total) + "*");
+      barisPesan.push("");
+      barisPesan.push("Mohon info ketersediaannya ya. Terima kasih!");
 
-      const url = "https://whatsapp.com" + NOMOR_WA_TOKO + "&text=" + encodeURIComponent(teks);
-      window.location.href = url;
+      var teksFinal = barisPesan.join("\n");
+      var urlTujuan = "https://wa.me" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(teksFinal);
+
+      var link = document.createElement("a");
+      link.href = urlTujuan;
+      link.target = "_top";
+      document.body.appendChild(link);
+      link.click();
     }
 
     muatDataProduk();
