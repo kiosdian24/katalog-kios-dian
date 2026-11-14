@@ -242,21 +242,21 @@
     }
 
     function buatInisial(nama) {
-      return nama.split(' ').slice(0, 2).map(k => k[0]).join('').toUpperCase();
+      return nama.split(' ').slice(0, 2).map(function(k) { return k[0] || ''; }).join('').toUpperCase();
     }
 
     function gantiKePngAtauInisial(imgElement, kode, inisial) {
       if (!imgElement.dataset.cobaPng) {
         imgElement.dataset.cobaPng = "1";
-        imgElement.src = `foto/${kode}.png`;
+        imgElement.src = "foto/" + kode + ".png";
       } else {
-        imgElement.parentElement.innerHTML = `<div class="foto-placeholder">${inisial}</div>`;
+        imgElement.parentElement.innerHTML = '<div class="foto-placeholder">' + inisial + '</div>';
       }
     }
 
     function pilihKategori(kat, tombol) {
       kategoriAktif = kat;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
       tombol.classList.add('active');
       terapkanFilter();
     }
@@ -273,7 +273,7 @@
 
     function terapkanFilter() {
       const kata = document.getElementById('inputCari').value.toLowerCase();
-      const hasil = semuaProduk.filter(p => {
+      const hasil = semuaProduk.filter(function(p) {
         const cocokKata = p.nama.toLowerCase().includes(kata) || (p.varian && p.varian.toLowerCase().includes(kata));
         return cocokKata && cocokKategori(p);
       });
@@ -286,40 +286,47 @@
         wadah.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#94A3B8;padding:30px 0;'>Produk tidak ditemukan pada kategori ini.</p>";
         return;
       }
-      wadah.innerHTML = data.map(p => {
+      wadah.innerHTML = data.map(function(p) {
         const qty = keranjang[p.kode] ? keranjang[p.kode].qty : 0;
         const habis = p.stok <= 0;
         const inisial = buatInisial(p.nama);
-        return `
-          <div class="card ${habis ? 'habis' : ''}">
-            <div>
-              <div class="foto-box">
-                <span class="stok-pill ${habis ? 'stok-kosong' : 'stok-ada'}">
-                  ${habis ? 'Habis' : 'Stok ' + p.stok}
-                </span>
-                <img src="foto/${p.kode}.jpg" alt="${p.nama}" onerror="gantiKePngAtauInisial(this, '${p.kode}', '${inisial}')">
-              </div>
-              <div class="nama-produk">${p.nama}</div>
-              <div class="varian">${p.varian || 'Reguler'}</div>
-            </div>
-            <div>
-              <div class="harga">${formatRupiah(p.harga)}</div>
-              ${habis ? `<button class="btn-tambah" disabled>Stok Kosong</button>` :
-                qty === 0 ? `<button class="btn-tambah" onclick="ubahQty('${p.kode}', 1)">+ Keranjang</button>` :
-                `<div class="qty-control">
-                  <button onclick="ubahQty('${p.kode}', -1)">−</button>
-                  <span>${qty}</span>
-                  <button onclick="ubahQty('${p.kode}', 1)">+</button>
-                </div>`
-              }
-            </div>
-          </div>
-        `;
+        const classCard = habis ? "card habis" : "card";
+        const classStok = habis ? "stok-pill stok-kosong" : "stok-pill stok-ada";
+        const teksStok = habis ? "Habis" : "Stok " + p.stok;
+        const varianTeks = p.varian || "Reguler";
+
+        let tombolAksi = "";
+        if (habis) {
+          tombolAksi = '<button class="btn-tambah" disabled>Stok Kosong</button>';
+        } else if (qty === 0) {
+          tombolAksi = '<button class="btn-tambah" onclick="ubahQty(\'' + p.kode + '\', 1)">+ Keranjang</button>';
+        } else {
+          tombolAksi = '<div class="qty-control">' +
+            '<button onclick="ubahQty(\'' + p.kode + '\', -1)">−</button>' +
+            '<span>' + qty + '</span>' +
+            '<button onclick="ubahQty(\'' + p.kode + '\', 1)">+</button>' +
+          '</div>';
+        }
+
+        return '<div class="' + classCard + '">' +
+          '<div>' +
+            '<div class="foto-box">' +
+              '<span class="' + classStok + '">' + teksStok + '</span>' +
+              '<img src="foto/' + p.kode + '.jpg" alt="' + p.nama + '" onerror="gantiKePngAtauInisial(this, \'' + p.kode + '\', \'' + inisial + '\')">' +
+            '</div>' +
+            '<div class="nama-produk">' + p.nama + '</div>' +
+            '<div class="varian">' + varianTeks + '</div>' +
+          '</div>' +
+          '<div>' +
+            '<div class="harga">' + formatRupiah(p.harga) + '</div>' +
+            tombolAksi +
+          '</div>' +
+        '</div>';
       }).join('');
     }
 
     function ubahQty(kode, delta) {
-      const produk = semuaProduk.find(p => p.kode === kode);
+      const produk = semuaProduk.find(function(p) { return p.kode === kode; });
       if (!produk) return;
       const qtySekarang = keranjang[kode] ? keranjang[kode].qty : 0;
       const qtyBaru = qtySekarang + delta;
@@ -330,7 +337,7 @@
       if (qtyBaru <= 0) {
         delete keranjang[kode];
       } else {
-        keranjang[kode] = { ...produk, qty: qtyBaru };
+        keranjang[kode] = Object.assign({}, produk, { qty: qtyBaru });
       }
       terapkanFilter();
       perbaruiBarKeranjang();
@@ -338,8 +345,8 @@
 
     function perbaruiBarKeranjang() {
       const daftar = Object.values(keranjang);
-      const totalItem = daftar.reduce((sum, item) => sum + item.qty, 0);
-      const totalHarga = daftar.reduce((sum, item) => sum + (item.harga * item.qty), 0);
+      const totalItem = daftar.reduce(function(sum, item) { return sum + item.qty; }, 0);
+      const totalHarga = daftar.reduce(function(sum, item) { return sum + (item.harga * item.qty); }, 0);
       const bar = document.getElementById('cartBar');
       if (totalItem > 0) {
         bar.classList.add('aktif');
@@ -354,19 +361,23 @@
     function bukaModal() {
       const daftar = Object.values(keranjang);
       let total = 0;
-      document.getElementById('listKeranjang').innerHTML = daftar.map(item => {
+      const htmlList = daftar.map(function(item) {
         const sub = item.harga * item.qty;
         total += sub;
-        return `
-          <div class="item-keranjang">
-            <div>
-              <div style="font-weight:700;font-size:14px;color:#F8FAFC;">${item.nama}</div>
-              <div style="font-size:12px;color:#94A3B8;">${item.qty} x ${formatRupiah(item.harga)}</div>
-            </div>
-            <div style="font-weight:800;color:#F59E0B;">${formatRupiah(sub)}</div>
-          </div>
-        `;
-      }).join('') + `<div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:17px;margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);"><span style="color:#94A3B8;font-size:13px;">TOTAL BELANJA</span><span style="color:#34D399;">${formatRupiah(total)}</span></div>`;
+        return '<div class="item-keranjang">' +
+          '<div>' +
+            '<div style="font-weight:700;font-size:14px;color:#F8FAFC;">' + item.nama + '</div>' +
+            '<div style="font-size:12px;color:#94A3B8;">' + item.qty + ' x ' + formatRupiah(item.harga) + '</div>' +
+          '</div>' +
+          '<div style="font-weight:800;color:#F59E0B;">' + formatRupiah(sub) + '</div>' +
+        '</div>';
+      }).join('');
+
+      document.getElementById('listKeranjang').innerHTML = htmlList +
+        '<div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:17px;margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);">' +
+          '<span style="color:#94A3B8;font-size:13px;">TOTAL BELANJA</span>' +
+          '<span style="color:#34D399;">' + formatRupiah(total) + '</span>' +
+        '</div>';
       document.getElementById('modalKeranjang').classList.add('buka');
     }
 
@@ -381,22 +392,22 @@
       if (daftar.length === 0) return;
 
       let total = 0;
-      let teks = `Halo *KIOS DIAN*, saya mau pesan barang berikut:\n\n`;
-      teks += `*Nama:* ${nama}\n`;
-      if (catatan) teks += `*Info:* ${catatan}\n`;
-      teks += `------------------------------\n`;
+      let teks = "Halo *KIOS DIAN*, saya mau pesan barang berikut:\n\n";
+      teks += "*Nama:* " + nama + "\n";
+      if (catatan) teks += "*Info:* " + catatan + "\n";
+      teks += "------------------------------\n";
 
-      daftar.forEach((item, idx) => {
+      daftar.forEach(function(item, idx) {
         const sub = item.harga * item.qty;
         total += sub;
-        teks += `${idx + 1}. ${item.nama} (${item.qty}x) = ${formatRupiah(sub)}\n`;
+        teks += (idx + 1) + ". " + item.nama + " (" + item.qty + "x) = " + formatRupiah(sub) + "\n";
       });
 
-      teks += `------------------------------\n`;
-      teks += `*TOTAL PESANAN: ${formatRupiah(total)}*\n\nMohon info ketersediaannya ya. Terima kasih!`;
+      teks += "------------------------------\n";
+      teks += "*TOTAL PESANAN: " + formatRupiah(total) + "*\n\nMohon info ketersediaannya ya. Terima kasih!";
 
-      const url = `https://wa.me{NOMOR_WA_TOKO}?text=${encodeURIComponent(teks)}`;
-      window.open(url, '_blank');
+      const url = "https://whatsapp.com" + NOMOR_WA_TOKO + "&text=" + encodeURIComponent(teks);
+      window.location.href = url;
     }
 
     muatDataProduk();
