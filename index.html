@@ -15,8 +15,11 @@
     .search-box input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); outline: none; }
     .search-box input:focus { border-color: #2563eb; }
     .grid-produk { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
-    .card { background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #e2e8f0; }
+    .card { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #e2e8f0; overflow: hidden; }
     .card.habis { opacity: 0.65; background: #f8fafc; }
+    .foto-box { width: 100%; height: 125px; background: #f8fafc; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #f1f5f9; }
+    .foto-box img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-placeholder { font-size: 36px; color: #94a3b8; }
     .nama-produk { font-weight: 600; font-size: 14px; color: #0f172a; margin-bottom: 4px; line-height: 1.3; }
     .varian { font-size: 12px; color: #64748b; margin-bottom: 8px; }
     .harga { font-weight: 700; font-size: 15px; color: #16a34a; margin-bottom: 6px; }
@@ -98,6 +101,15 @@
       return "Rp " + angka.toLocaleString('id-ID');
     }
 
+    function gantiKePngAtauIkon(imgElement, kode) {
+      if (!imgElement.dataset.cobaPng) {
+        imgElement.dataset.cobaPng = "1";
+        imgElement.src = `foto/${kode}.png`;
+      } else {
+        imgElement.parentElement.innerHTML = `<span class="foto-placeholder">📦</span>`;
+      }
+    }
+
     function tampilkanProduk(data) {
       const wadah = document.getElementById('daftarProduk');
       if (data.length === 0) {
@@ -110,6 +122,9 @@
         return `
           <div class="card ${habis ? 'habis' : ''}">
             <div>
+              <div class="foto-box">
+                <img src="foto/${p.kode}.jpg" alt="${p.nama}" onerror="gantiKePngAtauIkon(this, '${p.kode}')">
+              </div>
               <div class="nama-produk">${p.nama}</div>
               <div class="varian">${p.varian || '-'}</div>
               <div class="harga">${formatRupiah(p.harga)}</div>
