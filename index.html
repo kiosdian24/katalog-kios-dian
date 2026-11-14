@@ -447,7 +447,7 @@
       barisPesan.push("Mohon info ketersediaannya ya. Terima kasih!");
 
       var teksFinal = barisPesan.join("\n");
-      var urlTujuan = "https://wa.me" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(teksFinal);
+      var urlTujuan = "https://wa.me/" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(teksFinal);
 
       var link = document.createElement("a");
       link.href = urlTujuan;
