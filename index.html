@@ -244,26 +244,29 @@
     var keranjang = {};
     var kategoriAktif = "semua";
 
-    async function muatDataProduk() {
-      try {
-        var res = await fetch('produk.json?v=' + new Date().getTime());
-        semuaProduk = await res.json();
-        terapkanFilter();
-      } catch (e) {
-        document.getElementById('daftarProduk').innerHTML = "<p style='color:#94A3B8;'>Gagal memuat katalog produk.</p>";
-      }
+    function muatDataProduk() {
+      fetch('produk.json?v=' + new Date().getTime())
+        .then(function(res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(function(data) {
+          semuaProduk = data;
+          terapkanFilter();
+        })
+        .catch(function(err) {
+          document.getElementById('daftarProduk').innerHTML =
+            "<p style='grid-column:1/-1;text-align:center;color:#FCA5A5;padding:20px;'>Gagal memuat data: " + err.message + "</p>";
+        });
     }
 
     function formatRupiah(angka) {
-      return "Rp " + Number(angka).toLocaleString('id-ID');
+      return "Rp " + Number(angka || 0).toLocaleString('id-ID');
     }
 
     function buatInisial(nama) {
-      var kata = String(nama).split(' ');
-      var hasil = "";
-      if (kata.length > 0 && kata.length > 0) hasil += kata.charAt(0);
-      if (kata.length > 1 && kata.length > 0) hasil += kata.charAt(0);
-      return hasil.toUpperCase() || "KD";
+      var bersih = String(nama || "KD").trim();
+      return bersih.substring(0, 2).toUpperCase();
     }
 
     function gantiKePngAtauInisial(imgElement, kode, inisial) {
@@ -286,9 +289,9 @@
     }
 
     function cocokKategori(p) {
-      var teks = (p.nama + " " + (p.varian || "")).toLowerCase();
+      var teks = (String(p.nama || "") + " " + String(p.varian || "")).toLowerCase();
       if (kategoriAktif === "semua") return true;
-      if (kategoriAktif === "tersedia") return p.stok > 0;
+      if (kategoriAktif === "tersedia") return Number(p.stok) > 0;
       if (kategoriAktif === "minuman") return /good day|tea|kopi|coffee|extra joss|kuku bima|madurasa|vitacimin/.test(teks);
       if (kategoriAktif === "obat") return /panadol|mixagrip|diapet|neozep|konidin|antimo|oskadon|koyo|salonpas|bodrex|contrexyn|paramex|decolgen|tolak angin|entrostop|promag|antangin|esemag|kayu putih|obh|komix|hansaplas/.test(teks);
       if (kategoriAktif === "rokok") return /kretek|filter|mild|sampoerna|djarum|marlboro|camel|lucky|magnum|gg|surya|signature|dji sam soe|juara|jazy|la |neslite|ten mild|rival|orbit|drava|harmoni|sukun|djava|brown|janaka|loyal|asy|hs/.test(teks);
@@ -298,7 +301,7 @@
     function terapkanFilter() {
       var kata = document.getElementById('inputCari').value.toLowerCase();
       var hasil = semuaProduk.filter(function(p) {
-        var cocokKata = p.nama.toLowerCase().includes(kata) || (p.varian && p.varian.toLowerCase().includes(kata));
+        var cocokKata = String(p.nama || "").toLowerCase().includes(kata) || String(p.varian || "").toLowerCase().includes(kata);
         return cocokKata && cocokKategori(p);
       });
       tampilkanProduk(hasil);
@@ -306,7 +309,7 @@
 
     function tampilkanProduk(data) {
       var wadah = document.getElementById('daftarProduk');
-      if (data.length === 0) {
+      if (!data || data.length === 0) {
         wadah.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#94A3B8;padding:24px 0;font-size:12px;'>Produk tidak ditemukan.</p>";
         return;
       }
@@ -314,7 +317,7 @@
       for (var i = 0; i < data.length; i++) {
         var p = data[i];
         var qty = keranjang[p.kode] ? keranjang[p.kode].qty : 0;
-        var habis = p.stok <= 0;
+        var habis = Number(p.stok) <= 0;
         var inisial = buatInisial(p.nama);
         var classCard = habis ? "card habis" : "card";
         var classStok = habis ? "stok-pill stok-kosong" : "stok-pill stok-ada";
@@ -363,7 +366,7 @@
       if (!produk) return;
       var qtySekarang = keranjang[kode] ? keranjang[kode].qty : 0;
       var qtyBaru = qtySekarang + delta;
-      if (qtyBaru > produk.stok) {
+      if (qtyBaru > Number(produk.stok)) {
         alert("Maaf, stok barang ini hanya tersisa " + produk.stok);
         return;
       }
@@ -374,8 +377,8 @@
           kode: produk.kode,
           nama: produk.nama,
           varian: produk.varian,
-          harga: produk.harga,
-          stok: produk.stok,
+          harga: Number(produk.harga),
+          stok: Number(produk.stok),
           qty: qtyBaru
         };
       }
