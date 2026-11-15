@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0F172A">
   <title>KIOS DIAN • Katalog Digital & Pemesanan</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="https://flaticon.com">
   <link href="https://googleapis.com" rel="stylesheet">
   <style>
     :root {
       --bg-main: #0B1120;
       --bg-card: #131C31;
-      --bg-card-hover: #19243E;
       --border-subtle: rgba(255, 255, 255, 0.08);
       --text-primary: #F8FAFC;
       --text-secondary: #94A3B8;
@@ -20,7 +22,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-main); color: var(--text-primary); padding-bottom: 145px; line-height: 1.4; }
     
-    /* Header Ringkas Elegan */
     .hero-header {
       background: radial-gradient(circle at top right, #1E3A8A 0%, #0F172A 60%, #0B1120 100%);
       padding: 18px 14px 16px;
@@ -45,11 +46,14 @@
     .quick-links { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
     .pill-link {
       background: rgba(255,255,255,0.07); color: #E2E8F0; text-decoration: none;
-      font-size: 10px; font-weight: 600; padding: 5px 10px; border-radius: 7px;
-      border: 1px solid var(--border-subtle);
+      font-size: 10px; font-weight: 600; padding: 6px 11px; border-radius: 7px;
+      border: 1px solid var(--border-subtle); cursor: pointer;
+    }
+    .pill-install {
+      background: linear-gradient(135deg, #2563EB, #1D4ED8); color: #FFFFFF;
+      border: none; display: none;
     }
 
-    /* Container & Pencarian Sticky */
     .container { max-width: 820px; margin: 0 auto; padding: 10px; }
     .sticky-controls {
       position: sticky; top: 0; z-index: 20;
@@ -65,7 +69,6 @@
     .search-wrapper input:focus { border-color: var(--accent-blue); }
     .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; }
 
-    /* Filter Tabs */
     .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
     .filter-tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
@@ -77,7 +80,6 @@
       background: linear-gradient(135deg, #2563EB, #1D4ED8); color: white; border-color: transparent;
     }
 
-    /* Grid Kompak Ala Marketplace (3 Kolom di HP) */
     .grid-produk {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -91,24 +93,29 @@
       border: 1px solid var(--border-subtle); display: flex; flex-direction: column;
       justify-content: space-between;
     }
-    .card.habis { opacity: 0.52; }
+    .card.habis { opacity: 0.55; }
+    
+    /* KOTAK FOTO PROPORSIONAL ALA ALFAGIFT */
     .foto-box {
-      width: 100%; height: 82px; background: linear-gradient(145deg, #1E293B, #0F172A);
-      border-radius: 7px; margin-bottom: 6px; display: flex; align-items: center;
-      justify-content: center; overflow: hidden; position: relative; border: 1px solid var(--border-subtle);
+      width: 100%; height: 105px; background: #FFFFFF;
+      border-radius: 8px; margin-bottom: 6px; display: flex; align-items: center;
+      justify-content: center; overflow: hidden; position: relative;
+      padding: 6px;
     }
-    .foto-box img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-box img {
+      width: 100%; height: 100%; object-fit: contain;
+    }
     .foto-placeholder {
-      width: 34px; height: 34px; border-radius: 8px; background: rgba(56, 189, 248, 0.12);
-      color: var(--accent-blue); display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 13px;
+      width: 38px; height: 38px; border-radius: 8px; background: rgba(37, 99, 235, 0.12);
+      color: #1D4ED8; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px;
     }
     .stok-pill {
-      position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 700;
-      padding: 2px 5px; border-radius: 5px; backdrop-filter: blur(4px);
+      position: absolute; top: 4px; right: 4px; font-size: 9px; font-weight: 800;
+      padding: 2px 6px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
-    .stok-ada { background: rgba(16, 185, 129, 0.25); color: #34D399; }
-    .stok-kosong { background: rgba(239, 68, 68, 0.3); color: #FCA5A5; }
+    .stok-ada { background: #10B981; color: #FFFFFF; }
+    .stok-kosong { background: #EF4444; color: #FFFFFF; }
     .nama-produk {
       font-weight: 600; font-size: 11.5px; color: var(--text-primary);
       margin-bottom: 2px; line-height: 1.25;
@@ -132,9 +139,9 @@
       border-radius: 5px; font-weight: 800; font-size: 14px; cursor: pointer;
     }
     .qty-control span { font-weight: 800; font-size: 12px; color: var(--text-primary); }
-    /* Floating Cart Bar Dinaikkan ke Posisi Aman (bottom: 68px) */
+
     .cart-bar {
-      position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%);
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       width: calc(100% - 24px); max-width: 780px;
       background: rgba(15, 23, 42, 0.97); backdrop-filter: blur(14px);
       border: 1.5px solid #22C55E; border-radius: 14px;
@@ -150,7 +157,6 @@
       cursor: pointer; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
     }
 
-    /* Modal Checkout Muncul di Tengah Atas & Tombol Kirim di Atas */
     .modal {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
       backdrop-filter: blur(4px); z-index: 9999; align-items: flex-start; justify-content: center;
@@ -187,6 +193,7 @@
     <h1>KIOS DIAN</h1>
     <p>Jl. Tubagus Ismail Bawah No. 32, Lebak Gede • Belanja Harian Lengkap</p>
     <div class="quick-links">
+      <button id="btnInstallApp" class="pill-link pill-install" onclick="installAplikasi()">📲 Install Aplikasi Kios Dian</button>
       <a href="https://wa.me" target="_blank" class="pill-link">💬 Chat WA Toko</a>
       <a href="https://grab.com" target="_blank" class="pill-link">🛵 Pesan via GrabMart</a>
     </div>
@@ -225,7 +232,6 @@
         <button onclick="tutupModal()" style="background:none;border:none;color:#94A3B8;font-size:22px;cursor:pointer;">&times;</button>
       </div>
 
-      <!-- Tombol & Form Diletakkan di Paling Atas Agar Langsung Terlihat -->
       <div class="checkout-action-box">
         <label style="font-size:11px;font-weight:700;color:#94A3B8;">NAMA PEMESAN</label>
         <input type="text" id="namaPemesan" class="input-pelanggan" placeholder="Tulis nama Anda...">
@@ -243,6 +249,47 @@
     var semuaProduk = [];
     var keranjang = {};
     var kategoriAktif = "semua";
+    var deferredPrompt = null;
+
+    // Daftarkan Service Worker agar website bisa di-install sebagai Aplikasi (PWA)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js').catch(function() {});
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      var btnInstall = document.getElementById('btnInstallApp');
+      if (btnInstall) btnInstall.style.display = 'inline-block';
+    });
+
+    function installAplikasi() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function() {
+        deferredPrompt = null;
+        document.getElementById('btnInstallApp').style.display = 'none';
+      });
+    }
+
+    // Muat keranjang tersimpan di HP pelanggan (LocalStorage)
+    function muatKeranjangLokal() {
+      try {
+        var simpanan = localStorage.getItem('keranjang_kios_dian');
+        if (simpanan) {
+          keranjang = JSON.parse(simpanan) || {};
+          perbaruiBarKeranjang();
+        }
+      } catch (e) {}
+    }
+
+    function simpanKeranjangLokal() {
+      try {
+        localStorage.setItem('keranjang_kios_dian', JSON.stringify(keranjang));
+      } catch (e) {}
+    }
 
     function muatDataProduk() {
       fetch('produk.json?v=' + new Date().getTime())
@@ -382,6 +429,7 @@
           qty: qtyBaru
         };
       }
+      simpanKeranjangLokal();
       terapkanFilter();
       perbaruiBarKeranjang();
     }
@@ -467,7 +515,12 @@
       barisPesan.push("Mohon info ketersediaannya ya. Terima kasih!");
 
       var teksFinal = barisPesan.join("\n");
-      var urlTujuan = "https://wa.me/" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(teksFinal);
+      var urlTujuan = "https://wa.me" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(teksFinal);
+
+      keranjang = {};
+      simpanKeranjangLokal();
+      perbaruiBarKeranjang();
+      terapkanFilter();
 
       var link = document.createElement("a");
       link.href = urlTujuan;
@@ -476,6 +529,7 @@
       link.click();
     }
 
+    muatKeranjangLokal();
     muatDataProduk();
   </script>
 </body>
