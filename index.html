@@ -120,7 +120,7 @@
       </div>
       <div class="nav-actions">
         <button id="btnInstallApp" class="btn-mini btn-mini-install" onclick="installAplikasi()">📲 App</button>
-        <a href="https://wa.me" target="_blank" class="btn-mini">💬 WA</a>
+        <a href="https://wa.me/" target="_blank" class="btn-mini">💬 WA</a>
         <a href="https://grab.com" target="_blank" class="btn-mini">🛵 Grab</a>
       </div>
     </div>
@@ -144,7 +144,7 @@
         </div>
         <div class="banner-icon">🛵</div>
       </div>
-      <div class="banner-card banner-2" onclick="window.open('https://wa.me?text=Halo%20Kios%20Dian,%20saya%20mau%20Tarik%20Tunai%20/%20Top%20Up%20DANA', '_blank')">
+      <div class="banner-card banner-2" onclick="window.open('https://wa.me/?text=Halo%20Kios%20Dian,%20saya%20mau%20Tarik%20Tunai%20/%20Top%20Up%20DANA', '_blank')">
         <div>
           <span class="banner-tag">💸 LAYANAN KEUANGAN</span>
           <h2>GRATIS ADMIN &lt; 50RB!</h2>
@@ -357,6 +357,7 @@
       document.getElementById('modalKeranjang').classList.add('buka');
     }
     function tutupModal() { document.getElementById('modalKeranjang').classList.remove('buka'); }
+    // === BAGIAN PERBAIKAN FUNGSI KIRIM WHATSAPP ===
     function kirimKeWhatsApp() {
       var nama = document.getElementById('namaPemesan').value.trim() || "Pelanggan";
       var catatan = document.getElementById('catatanPesanan').value.trim();
@@ -370,9 +371,25 @@
         barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + "x) = " + formatRupiah(sub));
       }
       barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*", "", "Mohon info ketersediaannya ya. Terima kasih!");
+      
+      // Alamat WA sudah diperbaiki dengan tanda garis miring (/)
       var urlTujuan = "https://wa.me/" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(barisPesan.join("\n"));
-      keranjang = {}; simpanKeranjangLokal(); perbaruiBarKeranjang(); terapkanFilter();
-      var link = document.createElement("a"); link.href = urlTujuan; link.target = "_top"; document.body.appendChild(link); link.click();
+      
+      // Buka WhatsApp lebih dulu
+      var link = document.createElement("a");
+      link.href = urlTujuan;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Jeda 1,5 detik sebelum keranjang dikosongkan agar aman
+      setTimeout(function() {
+        keranjang = {};
+        simpanKeranjangLokal();
+        perbaruiBarKeranjang();
+        terapkanFilter();
+      }, 1500);
     }
     muatKeranjangLokal();
     muatDataProduk();
