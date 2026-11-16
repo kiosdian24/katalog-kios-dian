@@ -370,7 +370,7 @@
         var sub = daftar[i].harga * daftar[i].qty; total += sub;
         barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + "x) = " + formatRupiah(sub));
       }
-      barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*", "", "Mohon info ketersediaannya ya. Terima kasih!");
+      barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*", "", "Mohon konfirmasi ketersediaannya ya. Terima kasih!");
       
       // Alamat WA sudah diperbaiki dengan tanda garis miring (/)
       var urlTujuan = "https://wa.me/" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(barisPesan.join("\n"));
