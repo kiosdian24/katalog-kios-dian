@@ -55,6 +55,8 @@
     .banner-1 { background: linear-gradient(125deg, #1D4ED8 0%, #0284C7 60%, #0EA5E9 100%); }
     .banner-2 { background: linear-gradient(125deg, #047857 0%, #059669 60%, #10B981 100%); }
     .banner-3 { background: linear-gradient(125deg, #B91C1C 0%, #DC2626 55%, #F59E0B 100%); }
+    .banner-4 { background: linear-gradient(125deg, #78350F 0%, #B45309 55%, #F59E0B 100%); border: 1px solid rgba(253, 224, 71, 0.4); }
+    .banner-5 { background: linear-gradient(125deg, #6D28D9 0%, #9333EA 55%, #DB2777 100%); border: 1px solid rgba(244, 114, 182, 0.45); }
     .banner-tag { display: inline-block; background: rgba(0,0,0,0.28); color: #FDE047; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; margin-bottom: 5px; }
     .banner-card h2 { font-size: 14.5px; font-weight: 900; color: #FFFFFF; line-height: 1.2; margin-bottom: 3px; }
     .banner-card p { font-size: 10.5px; color: rgba(255,255,255,0.92); line-height: 1.3; }
@@ -135,6 +137,22 @@
 
   <section class="promo-section">
     <div class="banner-slider" id="bannerSlider">
+      <div class="banner-card banner-5" onclick="klikPintasanPromo()">
+        <div>
+          <span class="banner-tag">🍨 BONUS PEMBELI PERTAMA</span>
+          <h2>GRATIS WALL'S CHOCO MAGMA!</h2>
+          <p>Belanja pertama di web min. Rp 50.000 (1x klaim, tidak berlaku kelipatan).</p>
+        </div>
+        <div class="banner-icon">🍦</div>
+      </div>
+      <div class="banner-card banner-4" onclick="window.open('https://wa.me', '_blank')">
+        <div>
+          <span class="banner-tag">👑 MEMBER VIP KIOS DIAN</span>
+          <h2>BELANJA DAPAT POIN 1%!</h2>
+          <p>Kumpulkan poin setiap transaksi & tukar potongan belanja. Klik daftar!</p>
+        </div>
+        <div class="banner-icon">🎁</div>
+      </div>
       <div class="banner-card banner-3" onclick="klikPintasanPromo()">
         <div>
           <span class="banner-tag">🔥 PROMO HARI INI</span>
@@ -151,7 +169,7 @@
         </div>
         <div class="banner-icon">🛵</div>
       </div>
-      <div class="banner-card banner-2" onclick="window.open('https://wa.me/?text=Halo%20Kios%20Dian,%20saya%20mau%20Tarik%20Tunai%20/%20Top%20Up%20DANA', '_blank')">
+      <div class="banner-card banner-2" onclick="window.open('https://wa.me', '_blank')">
         <div>
           <span class="banner-tag">💸 LAYANAN KEUANGAN</span>
           <h2>GRATIS ADMIN &lt; 50RB!</h2>
@@ -162,6 +180,8 @@
     </div>
     <div class="banner-dots" id="bannerDots">
       <span class="b-dot aktif"></span>
+      <span class="b-dot"></span>
+      <span class="b-dot"></span>
       <span class="b-dot"></span>
       <span class="b-dot"></span>
     </div>
@@ -232,7 +252,7 @@
       var slider = document.getElementById('bannerSlider');
       var dots = document.querySelectorAll('.b-dot');
       if (!slider || dots.length === 0) return;
-      slideIndex = (slideIndex + 1) % 3;
+      slideIndex = (slideIndex + 1) % 5;
       var lebarKartu = slider.children[0].offsetWidth + 10;
       slider.scrollTo({ left: slideIndex * lebarKartu, behavior: 'smooth' });
       for (var i = 0; i < dots.length; i++) { dots[i].classList.toggle('aktif', i === slideIndex); }
@@ -381,7 +401,12 @@
         var sub = daftar[i].harga * daftar[i].qty; total += sub;
         barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + "x) = " + formatRupiah(sub));
       }
-      barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*", "", "Mohon konfirmasi ketersediaannya ya. Terima kasih!");
+      barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*");
+      if (total >= 50000 && !localStorage.getItem('klaim_choco_magma')) {
+        barisPesan.push("🎁 *BONUS PELANGGAN BARU:* Gratis 1x Wall's Choco Magma (Min. Belanja 50rb, tidak berlaku kelipatan)");
+        localStorage.setItem('klaim_choco_magma', 'sudah');
+      }
+      barisPesan.push("", "Mohon info ketersediaannya ya. Terima kasih!");
       
       // Alamat WA sudah diperbaiki dengan tanda garis miring (/)
       var urlTujuan = "https://wa.me/" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(barisPesan.join("\n"));
