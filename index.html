@@ -284,6 +284,7 @@
 
     function cekInfoPromo(p) {
       var hargaNormal = Number(p.harga || 0);
+      var satuan = p.satuan || "Pcs";
       var diskonKasir = Number(p.diskon || 0);
       var minG1 = Number(p.min_grosir || 0);
       var hrgG1 = Number(p.harga_grosir || 0);
@@ -314,12 +315,12 @@
 
       if (minG1 > 1 && hrgG1 > 0) {
         if (!badgeTeks) badgeTeks = "HARGA GROSIR";
-        infoList.push("📦 " + namaG1 + " (" + minG1 + ") = " + formatRupiah(hrgG1));
+        infoList.push("📦 " + namaG1 + " (" + minG1 + " " + satuan + ") = " + formatRupiah(hrgG1));
       }
 
       if (minG2 > 1 && hrgG2 > 0) {
         if (!badgeTeks) badgeTeks = "HARGA GROSIR";
-        infoList.push("🏢 " + namaG2 + " (" + minG2 + ") = " + formatRupiah(hrgG2));
+        infoList.push("🏢 " + namaG2 + " (" + minG2 + " " + satuan + ") = " + formatRupiah(hrgG2));
       }
 
       if (!badgeTeks && infoList.length === 0) {
@@ -352,6 +353,7 @@
 
     function hitungSubtotalItemWeb(item) {
       var qty = Number(item.qty || 0);
+      var satuan = item.satuan || "Pcs";
       var hargaNormal = Number(item.harga || 0);
       var diskon = Number(item.diskon || 0);
       var minG1 = Number(item.min_grosir || 0);
@@ -372,7 +374,7 @@
         var qtyBayarSisa = Math.min(sisaEceran, beliX);
         var totalQtyBayar = (jumlahPaket * beliX) + qtyBayarSisa;
         var totalQtyGratis = qty - totalQtyBayar;
-        var catatan = totalQtyGratis > 0 ? ("Gratis " + totalQtyGratis + " pcs") : ("Promo Beli " + beliX + " Gratis " + gratisY);
+        var catatan = totalQtyGratis > 0 ? ("Gratis " + totalQtyGratis + " " + satuan) : ("Promo Beli " + beliX + " Gratis " + gratisY);
         return { subtotal: totalQtyBayar * hargaSatuanEfektif, catatan: catatan };
       }
 
@@ -397,11 +399,11 @@
       if (sisa > 0) {
         totalSub += sisa * hargaSatuanEfektif;
         if (rincian.length > 0) {
-          rincian.push(sisa + " ecer");
+          rincian.push(sisa + " " + satuan);
         }
       }
 
-      var catatanAkhir = rincian.length > 0 ? rincian.join(" + ") : (diskon > 0 ? ("Diskon -" + formatRupiah(diskon) + "/pcs") : "");
+      var catatanAkhir = rincian.length > 0 ? rincian.join(" + ") : (diskon > 0 ? ("Diskon -" + formatRupiah(diskon) + "/" + satuan) : "");
       return { subtotal: totalSub, catatan: catatanAkhir };
     }
     function muatDataProduk() {
@@ -440,7 +442,7 @@
       });
       tampilkanProduk(hasil);
     }
-        function pilihTingkatKartu(kode, tingkat) {
+    function pilihTingkatKartu(kode, tingkat) {
       tingkatPilihan[kode] = tingkat;
       terapkanFilter();
     }
@@ -456,6 +458,7 @@
         var p = data[i];
         var qty = keranjang[p.kode] ? keranjang[p.kode].qty : 0;
         var habis = Number(p.stok) <= 0;
+        var satuan = p.satuan || "Pcs";
         var infoPromo = cekInfoPromo(p);
         var hargaEcer = Math.max(0, Number(p.harga || 0) - Number(p.diskon || 0));
         var minG1 = Number(p.min_grosir || 0);
@@ -468,7 +471,7 @@
         var tAktif = tingkatPilihan[p.kode] || 0;
         var hargaTampil = hargaEcer;
         var qtyTambah = 1;
-        var labelBeli = "+ Beli";
+        var labelBeli = "+ 1 " + satuan;
 
         if (tAktif === 1 && minG1 > 1 && hrgG1 > 0) {
           hargaTampil = hrgG1;
@@ -478,12 +481,14 @@
           hargaTampil = hrgG2;
           qtyTambah = minG2;
           labelBeli = "+ " + namaG2;
+        } else if (minG1 <= 1 && minG2 <= 1) {
+          labelBeli = "+ Beli";
         }
 
         var tierHtml = "";
         if ((minG1 > 1 && hrgG1 > 0) || (minG2 > 1 && hrgG2 > 0)) {
           tierHtml += '<div class="tier-selector">';
-          tierHtml += '<button class="tier-btn' + (tAktif === 0 ? ' aktif' : '') + '" onclick="pilihTingkatKartu(\'' + p.kode + '\', 0)">1 Pcs</button>';
+          tierHtml += '<button class="tier-btn' + (tAktif === 0 ? ' aktif' : '') + '" onclick="pilihTingkatKartu(\'' + p.kode + '\', 0)">1 ' + satuan + '</button>';
           if (minG1 > 1 && hrgG1 > 0) {
             tierHtml += '<button class="tier-btn' + (tAktif === 1 ? ' aktif' : '') + '" onclick="pilihTingkatKartu(\'' + p.kode + '\', 1)">' + namaG1 + '</button>';
           }
@@ -496,7 +501,7 @@
         var inisial = buatInisial(p.nama);
         var classCard = "card" + (habis ? " habis" : "") + (infoPromo ? " promo-card" : "");
         var classStok = habis ? "stok-pill stok-kosong" : "stok-pill stok-ada";
-        var teksStok = habis ? "Habis" : p.stok;
+        var teksStok = habis ? "Habis" : (p.stok + " " + satuan);
         var badgeDiskonHtml = (infoPromo && infoPromo.badgeTeks) ? '<span class="badge-diskon">' + infoPromo.badgeTeks + '</span>' : '';
         var hargaCoretHtml = (tAktif === 0 && infoPromo && infoPromo.hargaCoret) ? '<div class="harga-coret">' + formatRupiah(infoPromo.hargaCoret) + '</div>' : '';
 
@@ -504,7 +509,7 @@
           ? '<button class="btn-tambah" disabled>Habis</button>'
           : (qty === 0
               ? '<button class="btn-tambah" onclick="ubahQty(\'' + p.kode + '\', ' + qtyTambah + ')">' + labelBeli + '</button>'
-              : '<div class="qty-control"><button onclick="ubahQty(\'' + p.kode + '\', -' + qtyTambah + ')">−</button><span>' + qty + '</span><button onclick="ubahQty(\'' + p.kode + '\', ' + qtyTambah + ')">+</button></div>');
+              : '<div class="qty-control"><button onclick="ubahQty(\'' + p.kode + '\', -' + qtyTambah + ')">−</button><span>' + qty + ' ' + satuan + '</span><button onclick="ubahQty(\'' + p.kode + '\', ' + qtyTambah + ')">+</button></div>');
 
         htmlSemua += '<div class="' + classCard + '"><div><div class="foto-box">' + badgeDiskonHtml + '<span class="' + classStok + '">' + teksStok + '</span><img src="foto/' + p.kode + '.jpg" alt="' + p.nama + '" onerror="gantiKePngAtauInisial(this, \'' + p.kode + '\', \'' + inisial + '\')"></div><div class="nama-produk">' + p.nama + '</div><div class="varian">' + (p.varian || "Reguler") + '</div>' + tierHtml + '</div><div>' + hargaCoretHtml + '<div class="harga">' + formatRupiah(hargaTampil) + '</div>' + tombolAksi + '</div></div>';
       }
@@ -514,9 +519,10 @@
     function ubahQty(kode, delta) {
       var produk = semuaProduk.find(function(x) { return x.kode === kode; });
       if (!produk) return;
+      var satuan = produk.satuan || "Pcs";
       var qtyBaru = (keranjang[kode] ? keranjang[kode].qty : 0) + delta;
       if (qtyBaru > Number(produk.stok)) {
-        alert("Maaf, stok barang ini hanya tersisa " + produk.stok + " pcs");
+        alert("Maaf, stok barang ini hanya tersisa " + produk.stok + " " + satuan);
         return;
       }
       if (qtyBaru <= 0) {
@@ -526,6 +532,7 @@
           kode: produk.kode,
           nama: produk.nama,
           varian: produk.varian,
+          satuan: satuan,
           harga: Number(produk.harga),
           diskon: Number(produk.diskon || 0),
           min_grosir: Number(produk.min_grosir || 0),
@@ -546,15 +553,14 @@
     }
 
     function perbaruiBarKeranjang() {
-      var daftar = Object.values(keranjang), totalItem = 0, totalHarga = 0;
+      var daftar = Object.values(keranjang), totalJenis = daftar.length, totalHarga = 0;
       for (var i = 0; i < daftar.length; i++) {
-        totalItem += daftar[i].qty;
         totalHarga += hitungSubtotalItemWeb(daftar[i]).subtotal;
       }
       var bar = document.getElementById('cartBar');
-      if (totalItem > 0) {
+      if (totalJenis > 0) {
         bar.classList.add('aktif');
-        document.getElementById('jumlahItem').innerText = totalItem + " Pcs di Keranjang";
+        document.getElementById('jumlahItem').innerText = totalJenis + " Jenis Barang di Keranjang";
         document.getElementById('totalHarga').innerText = formatRupiah(totalHarga);
       } else {
         bar.classList.remove('aktif');
@@ -567,10 +573,11 @@
       for (var i = 0; i < daftar.length; i++) {
         var hasilHitung = hitungSubtotalItemWeb(daftar[i]);
         var sub = hasilHitung.subtotal;
+        var satuan = daftar[i].satuan || "Pcs";
         total += sub;
         var hargaSatuanEfektif = Math.max(0, Number(daftar[i].harga) - Number(daftar[i].diskon || 0));
         var teksPromo = hasilHitung.catatan ? (' <span style="color:#38BDF8;">(' + hasilHitung.catatan + ')</span>') : '';
-        htmlList += '<div class="item-keranjang"><div><div style="font-weight:700;font-size:13px;color:#F8FAFC;">' + daftar[i].nama + '</div><div style="font-size:11px;color:#94A3B8;">' + daftar[i].qty + ' pcs (Ecer ' + formatRupiah(hargaSatuanEfektif) + ')' + teksPromo + '</div></div><div style="font-weight:800;font-size:13px;color:#F59E0B;">' + formatRupiah(sub) + '</div></div>';
+        htmlList += '<div class="item-keranjang"><div><div style="font-weight:700;font-size:13px;color:#F8FAFC;">' + daftar[i].nama + '</div><div style="font-size:11px;color:#94A3B8;">' + daftar[i].qty + ' ' + satuan + ' (Ecer ' + formatRupiah(hargaSatuanEfektif) + '/' + satuan + ')' + teksPromo + '</div></div><div style="font-weight:800;font-size:13px;color:#F59E0B;">' + formatRupiah(sub) + '</div></div>';
       }
       document.getElementById('listKeranjang').innerHTML = htmlList + '<div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:15px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);"><span style="color:#94A3B8;font-size:12px;">TOTAL BELANJA</span><span style="color:#34D399;">' + formatRupiah(total) + '</span></div>';
       document.getElementById('modalKeranjang').classList.add('buka');
@@ -589,9 +596,10 @@
       for (var i = 0; i < daftar.length; i++) {
         var hasilHitung = hitungSubtotalItemWeb(daftar[i]);
         var sub = hasilHitung.subtotal;
+        var satuan = daftar[i].satuan || "Pcs";
         total += sub;
         var infoPromoWa = hasilHitung.catatan ? (" [" + hasilHitung.catatan + "]") : "";
-        barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + " pcs)" + infoPromoWa + " = " + formatRupiah(sub));
+        barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + " " + satuan + ")" + infoPromoWa + " = " + formatRupiah(sub));
       }
       barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*");
       if (total >= 50000 && !localStorage.getItem('klaim_choco_magma')) {
