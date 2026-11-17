@@ -87,6 +87,9 @@
     .nama-produk { font-weight: 600; font-size: 11.5px; color: var(--text-primary); margin-bottom: 2px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .varian { font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .promo-info-tag { font-size: 9.5px; font-weight: 700; color: #38BDF8; background: rgba(56, 189, 248, 0.12); padding: 2px 5px; border-radius: 4px; margin-bottom: 4px; display: inline-block; }
+    .tier-selector { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 5px; }
+    .tier-btn { background: #0F172A; color: #94A3B8; border: 1px solid #334155; border-radius: 5px; font-size: 9px; font-weight: 700; padding: 2px 5px; cursor: pointer; }
+    .tier-btn.aktif { background: #2563EB; color: #FFFFFF; border-color: #38BDF8; }
     .harga-coret { font-size: 10px; color: #F87171; text-decoration: line-through; font-weight: 600; margin-bottom: 1px; }
     .harga { font-weight: 800; font-size: 12.5px; color: var(--accent-gold); margin-bottom: 6px; }
     .btn-tambah { background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; padding: 6px 4px; border-radius: 7px; font-weight: 700; font-size: 10.5px; cursor: pointer; width: 100%; }
@@ -240,7 +243,7 @@
       { kata: "kopi", markupPersen: 12 }
     ];
 
-    var semuaProduk = [], keranjang = {}, kategoriAktif = "semua", deferredPrompt = null, slideIndex = 0;
+        var semuaProduk = [], keranjang = {}, tingkatPilihan = {}, kategoriAktif = "semua", deferredPrompt = null, slideIndex = 0;
 
     setInterval(function() {
       var slider = document.getElementById('bannerSlider');
@@ -282,8 +285,12 @@
     function cekInfoPromo(p) {
       var hargaNormal = Number(p.harga || 0);
       var diskonKasir = Number(p.diskon || 0);
-      var minGrosir = Number(p.min_grosir || 0);
-      var hargaGrosir = Number(p.harga_grosir || 0);
+      var minG1 = Number(p.min_grosir || 0);
+      var hrgG1 = Number(p.harga_grosir || 0);
+      var namaG1 = p.nama_grosir_1 || ("Paket " + minG1);
+      var minG2 = Number(p.min_grosir_2 || 0);
+      var hrgG2 = Number(p.harga_grosir_2 || 0);
+      var namaG2 = p.nama_grosir_2 || ("Dus " + minG2);
       var beliX = Number(p.beli_x || 0);
       var gratisY = Number(p.gratis_y || 0);
 
@@ -292,7 +299,7 @@
       var hargaJualEfektif = Math.max(0, hargaNormal - diskonKasir);
       var hargaCoret = null;
       var badgeTeks = "";
-      var infoTambahan = "";
+      var infoList = [];
 
       if (diskonKasir > 0) {
         hargaCoret = hargaNormal;
@@ -302,16 +309,20 @@
 
       if (beliX > 0 && gratisY > 0) {
         badgeTeks = "BELI " + beliX + " GRATIS " + gratisY;
-        infoTambahan = "🎁 Beli " + beliX + " Gratis " + gratisY;
+        infoList.push("🎁 Beli " + beliX + " Gratis " + gratisY);
       }
 
-      if (minGrosir > 1 && hargaGrosir > 0) {
-        if (!badgeTeks) badgeTeks = "GROSIR " + minGrosir + " PCS";
-        var teksGrosir = "📦 Beli " + minGrosir + " = " + formatRupiah(hargaGrosir);
-        infoTambahan = infoTambahan ? (infoTambahan + " | " + teksGrosir) : teksGrosir;
+      if (minG1 > 1 && hrgG1 > 0) {
+        if (!badgeTeks) badgeTeks = "HARGA GROSIR";
+        infoList.push("📦 " + namaG1 + " (" + minG1 + ") = " + formatRupiah(hrgG1));
       }
 
-      if (!badgeTeks && !infoTambahan) {
+      if (minG2 > 1 && hrgG2 > 0) {
+        if (!badgeTeks) badgeTeks = "HARGA GROSIR";
+        infoList.push("🏢 " + namaG2 + " (" + minG2 + ") = " + formatRupiah(hrgG2));
+      }
+
+      if (!badgeTeks && infoList.length === 0) {
         if (PROMO_KODE_SKU[p.kode] && PROMO_KODE_SKU[p.kode] > hargaJualEfektif) {
           var hargaAsli = PROMO_KODE_SKU[p.kode];
           hargaCoret = hargaAsli;
@@ -329,13 +340,13 @@
         }
       }
 
-      if (!badgeTeks && !infoTambahan) return null;
+      if (!badgeTeks && infoList.length === 0) return null;
 
       return {
         hargaEfektif: hargaJualEfektif,
         hargaCoret: hargaCoret,
         badgeTeks: badgeTeks,
-        infoTambahan: infoTambahan
+        infoTambahan: infoList.join(" | ")
       };
     }
 
@@ -343,8 +354,12 @@
       var qty = Number(item.qty || 0);
       var hargaNormal = Number(item.harga || 0);
       var diskon = Number(item.diskon || 0);
-      var minGrosir = Number(item.min_grosir || 0);
-      var hrgGrosir = Number(item.harga_grosir || 0);
+      var minG1 = Number(item.min_grosir || 0);
+      var hrgG1 = Number(item.harga_grosir || 0);
+      var namaG1 = item.nama_grosir_1 || ("Paket " + minG1);
+      var minG2 = Number(item.min_grosir_2 || 0);
+      var hrgG2 = Number(item.harga_grosir_2 || 0);
+      var namaG2 = item.nama_grosir_2 || ("Dus " + minG2);
       var beliX = Number(item.beli_x || 0);
       var gratisY = Number(item.gratis_y || 0);
 
@@ -361,18 +376,33 @@
         return { subtotal: totalQtyBayar * hargaSatuanEfektif, catatan: catatan };
       }
 
-      if (minGrosir > 1 && hrgGrosir > 0 && qty >= minGrosir) {
-        var jmlPaketGrosir = Math.floor(qty / minGrosir);
-        var sisaEcerGrosir = qty % minGrosir;
-        var totalSub = (jmlPaketGrosir * hrgGrosir) + (sisaEcerGrosir * hargaSatuanEfektif);
-        var catGrosir = "Paket " + jmlPaketGrosir + "x(" + minGrosir + "pcs)" + (sisaEcerGrosir > 0 ? (" + " + sisaEcerGrosir + " ecer") : "");
-        return { subtotal: totalSub, catatan: catGrosir };
+      var sisa = qty;
+      var totalSub = 0;
+      var rincian = [];
+
+      if (minG2 > 1 && hrgG2 > 0 && sisa >= minG2) {
+        var jmlG2 = Math.floor(sisa / minG2);
+        sisa = sisa % minG2;
+        totalSub += jmlG2 * hrgG2;
+        rincian.push(jmlG2 + "x " + namaG2);
       }
 
-      return {
-        subtotal: qty * hargaSatuanEfektif,
-        catatan: diskon > 0 ? ("Diskon -" + formatRupiah(diskon) + "/pcs") : ""
-      };
+      if (minG1 > 1 && hrgG1 > 0 && sisa >= minG1) {
+        var jmlG1 = Math.floor(sisa / minG1);
+        sisa = sisa % minG1;
+        totalSub += jmlG1 * hrgG1;
+        rincian.push(jmlG1 + "x " + namaG1);
+      }
+
+      if (sisa > 0) {
+        totalSub += sisa * hargaSatuanEfektif;
+        if (rincian.length > 0) {
+          rincian.push(sisa + " ecer");
+        }
+      }
+
+      var catatanAkhir = rincian.length > 0 ? rincian.join(" + ") : (diskon > 0 ? ("Diskon -" + formatRupiah(diskon) + "/pcs") : "");
+      return { subtotal: totalSub, catatan: catatanAkhir };
     }
     function muatDataProduk() {
       fetch('produk.json?v=' + new Date().getTime())
@@ -410,35 +440,88 @@
       });
       tampilkanProduk(hasil);
     }
+        function pilihTingkatKartu(kode, tingkat) {
+      tingkatPilihan[kode] = tingkat;
+      terapkanFilter();
+    }
+
     function tampilkanProduk(data) {
       var wadah = document.getElementById('daftarProduk');
-      if (!data || data.length === 0) { wadah.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#94A3B8;padding:24px 0;font-size:12px;'>Produk tidak ditemukan.</p>"; return; }
+      if (!data || data.length === 0) {
+        wadah.innerHTML = "<p style='grid-column:1/-1;text-align:center;color:#94A3B8;padding:24px 0;font-size:12px;'>Produk tidak ditemukan.</p>";
+        return;
+      }
       var htmlSemua = "";
       for (var i = 0; i < data.length; i++) {
         var p = data[i];
         var qty = keranjang[p.kode] ? keranjang[p.kode].qty : 0;
         var habis = Number(p.stok) <= 0;
         var infoPromo = cekInfoPromo(p);
-        var hargaTampil = Math.max(0, Number(p.harga || 0) - Number(p.diskon || 0));
+        var hargaEcer = Math.max(0, Number(p.harga || 0) - Number(p.diskon || 0));
+        var minG1 = Number(p.min_grosir || 0);
+        var hrgG1 = Number(p.harga_grosir || 0);
+        var namaG1 = p.nama_grosir_1 || ("Paket " + minG1);
+        var minG2 = Number(p.min_grosir_2 || 0);
+        var hrgG2 = Number(p.harga_grosir_2 || 0);
+        var namaG2 = p.nama_grosir_2 || ("Dus " + minG2);
+
+        var tAktif = tingkatPilihan[p.kode] || 0;
+        var hargaTampil = hargaEcer;
+        var qtyTambah = 1;
+        var labelBeli = "+ Beli";
+
+        if (tAktif === 1 && minG1 > 1 && hrgG1 > 0) {
+          hargaTampil = hrgG1;
+          qtyTambah = minG1;
+          labelBeli = "+ " + namaG1;
+        } else if (tAktif === 2 && minG2 > 1 && hrgG2 > 0) {
+          hargaTampil = hrgG2;
+          qtyTambah = minG2;
+          labelBeli = "+ " + namaG2;
+        }
+
+        var tierHtml = "";
+        if ((minG1 > 1 && hrgG1 > 0) || (minG2 > 1 && hrgG2 > 0)) {
+          tierHtml += '<div class="tier-selector">';
+          tierHtml += '<button class="tier-btn' + (tAktif === 0 ? ' aktif' : '') + '" onclick="pilihTingkatKartu(\'' + p.kode + '\', 0)">1 Pcs</button>';
+          if (minG1 > 1 && hrgG1 > 0) {
+            tierHtml += '<button class="tier-btn' + (tAktif === 1 ? ' aktif' : '') + '" onclick="pilihTingkatKartu(\'' + p.kode + '\', 1)">' + namaG1 + '</button>';
+          }
+          if (minG2 > 1 && hrgG2 > 0) {
+            tierHtml += '<button class="tier-btn' + (tAktif === 2 ? ' aktif' : '') + '" onclick="pilihTingkatKartu(\'' + p.kode + '\', 2)">' + namaG2 + '</button>';
+          }
+          tierHtml += '</div>';
+        }
+
         var inisial = buatInisial(p.nama);
         var classCard = "card" + (habis ? " habis" : "") + (infoPromo ? " promo-card" : "");
         var classStok = habis ? "stok-pill stok-kosong" : "stok-pill stok-ada";
         var teksStok = habis ? "Habis" : p.stok;
         var badgeDiskonHtml = (infoPromo && infoPromo.badgeTeks) ? '<span class="badge-diskon">' + infoPromo.badgeTeks + '</span>' : '';
-        var infoTambahanHtml = (infoPromo && infoPromo.infoTambahan) ? '<div class="promo-info-tag">' + infoPromo.infoTambahan + '</div>' : '';
-        var hargaCoretHtml = (infoPromo && infoPromo.hargaCoret) ? '<div class="harga-coret">' + formatRupiah(infoPromo.hargaCoret) + '</div>' : '';
-        var tombolAksi = habis ? '<button class="btn-tambah" disabled>Habis</button>' : (qty === 0 ? '<button class="btn-tambah" onclick="ubahQty(\'' + p.kode + '\', 1)">+ Beli</button>' : '<div class="qty-control"><button onclick="ubahQty(\'' + p.kode + '\', -1)">−</button><span>' + qty + '</span><button onclick="ubahQty(\'' + p.kode + '\', 1)">+</button></div>');
-        htmlSemua += '<div class="' + classCard + '"><div><div class="foto-box">' + badgeDiskonHtml + '<span class="' + classStok + '">' + teksStok + '</span><img src="foto/' + p.kode + '.jpg" alt="' + p.nama + '" onerror="gantiKePngAtauInisial(this, \'' + p.kode + '\', \'' + inisial + '\')"></div><div class="nama-produk">' + p.nama + '</div><div class="varian">' + (p.varian || "Reguler") + '</div>' + infoTambahanHtml + '</div><div>' + hargaCoretHtml + '<div class="harga">' + formatRupiah(hargaTampil) + '</div>' + tombolAksi + '</div></div>';
+        var hargaCoretHtml = (tAktif === 0 && infoPromo && infoPromo.hargaCoret) ? '<div class="harga-coret">' + formatRupiah(infoPromo.hargaCoret) + '</div>' : '';
+
+        var tombolAksi = habis
+          ? '<button class="btn-tambah" disabled>Habis</button>'
+          : (qty === 0
+              ? '<button class="btn-tambah" onclick="ubahQty(\'' + p.kode + '\', ' + qtyTambah + ')">' + labelBeli + '</button>'
+              : '<div class="qty-control"><button onclick="ubahQty(\'' + p.kode + '\', -' + qtyTambah + ')">−</button><span>' + qty + '</span><button onclick="ubahQty(\'' + p.kode + '\', ' + qtyTambah + ')">+</button></div>');
+
+        htmlSemua += '<div class="' + classCard + '"><div><div class="foto-box">' + badgeDiskonHtml + '<span class="' + classStok + '">' + teksStok + '</span><img src="foto/' + p.kode + '.jpg" alt="' + p.nama + '" onerror="gantiKePngAtauInisial(this, \'' + p.kode + '\', \'' + inisial + '\')"></div><div class="nama-produk">' + p.nama + '</div><div class="varian">' + (p.varian || "Reguler") + '</div>' + tierHtml + '</div><div>' + hargaCoretHtml + '<div class="harga">' + formatRupiah(hargaTampil) + '</div>' + tombolAksi + '</div></div>';
       }
       wadah.innerHTML = htmlSemua;
     }
+
     function ubahQty(kode, delta) {
       var produk = semuaProduk.find(function(x) { return x.kode === kode; });
       if (!produk) return;
       var qtyBaru = (keranjang[kode] ? keranjang[kode].qty : 0) + delta;
-      if (qtyBaru > Number(produk.stok)) { alert("Maaf, stok barang ini hanya tersisa " + produk.stok); return; }
-      if (qtyBaru <= 0) { delete keranjang[kode]; }
-      else {
+      if (qtyBaru > Number(produk.stok)) {
+        alert("Maaf, stok barang ini hanya tersisa " + produk.stok + " pcs");
+        return;
+      }
+      if (qtyBaru <= 0) {
+        delete keranjang[kode];
+      } else {
         keranjang[kode] = {
           kode: produk.kode,
           nama: produk.nama,
@@ -447,14 +530,21 @@
           diskon: Number(produk.diskon || 0),
           min_grosir: Number(produk.min_grosir || 0),
           harga_grosir: Number(produk.harga_grosir || 0),
+          nama_grosir_1: produk.nama_grosir_1 || "",
+          min_grosir_2: Number(produk.min_grosir_2 || 0),
+          harga_grosir_2: Number(produk.harga_grosir_2 || 0),
+          nama_grosir_2: produk.nama_grosir_2 || "",
           beli_x: Number(produk.beli_x || 0),
           gratis_y: Number(produk.gratis_y || 0),
           stok: Number(produk.stok),
           qty: qtyBaru
         };
       }
-      simpanKeranjangLokal(); terapkanFilter(); perbaruiBarKeranjang();
+      simpanKeranjangLokal();
+      terapkanFilter();
+      perbaruiBarKeranjang();
     }
+
     function perbaruiBarKeranjang() {
       var daftar = Object.values(keranjang), totalItem = 0, totalHarga = 0;
       for (var i = 0; i < daftar.length; i++) {
@@ -462,9 +552,16 @@
         totalHarga += hitungSubtotalItemWeb(daftar[i]).subtotal;
       }
       var bar = document.getElementById('cartBar');
-      if (totalItem > 0) { bar.classList.add('aktif'); document.getElementById('jumlahItem').innerText = totalItem + " Barang di Keranjang"; document.getElementById('totalHarga').innerText = formatRupiah(totalHarga); }
-      else { bar.classList.remove('aktif'); tutupModal(); }
+      if (totalItem > 0) {
+        bar.classList.add('aktif');
+        document.getElementById('jumlahItem').innerText = totalItem + " Pcs di Keranjang";
+        document.getElementById('totalHarga').innerText = formatRupiah(totalHarga);
+      } else {
+        bar.classList.remove('aktif');
+        tutupModal();
+      }
     }
+
     function bukaModal() {
       var daftar = Object.values(keranjang), total = 0, htmlList = "";
       for (var i = 0; i < daftar.length; i++) {
@@ -473,12 +570,14 @@
         total += sub;
         var hargaSatuanEfektif = Math.max(0, Number(daftar[i].harga) - Number(daftar[i].diskon || 0));
         var teksPromo = hasilHitung.catatan ? (' <span style="color:#38BDF8;">(' + hasilHitung.catatan + ')</span>') : '';
-        htmlList += '<div class="item-keranjang"><div><div style="font-weight:700;font-size:13px;color:#F8FAFC;">' + daftar[i].nama + '</div><div style="font-size:11px;color:#94A3B8;">' + daftar[i].qty + ' x ' + formatRupiah(hargaSatuanEfektif) + teksPromo + '</div></div><div style="font-weight:800;font-size:13px;color:#F59E0B;">' + formatRupiah(sub) + '</div></div>';
+        htmlList += '<div class="item-keranjang"><div><div style="font-weight:700;font-size:13px;color:#F8FAFC;">' + daftar[i].nama + '</div><div style="font-size:11px;color:#94A3B8;">' + daftar[i].qty + ' pcs (Ecer ' + formatRupiah(hargaSatuanEfektif) + ')' + teksPromo + '</div></div><div style="font-weight:800;font-size:13px;color:#F59E0B;">' + formatRupiah(sub) + '</div></div>';
       }
       document.getElementById('listKeranjang').innerHTML = htmlList + '<div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:15px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);"><span style="color:#94A3B8;font-size:12px;">TOTAL BELANJA</span><span style="color:#34D399;">' + formatRupiah(total) + '</span></div>';
       document.getElementById('modalKeranjang').classList.add('buka');
     }
+
     function tutupModal() { document.getElementById('modalKeranjang').classList.remove('buka'); }
+
     function kirimKeWhatsApp() {
       var nama = document.getElementById('namaPemesan').value.trim() || "Pelanggan";
       var catatan = document.getElementById('catatanPesanan').value.trim();
@@ -492,7 +591,7 @@
         var sub = hasilHitung.subtotal;
         total += sub;
         var infoPromoWa = hasilHitung.catatan ? (" [" + hasilHitung.catatan + "]") : "";
-        barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + "x)" + infoPromoWa + " = " + formatRupiah(sub));
+        barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + " pcs)" + infoPromoWa + " = " + formatRupiah(sub));
       }
       barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*");
       if (total >= 50000 && !localStorage.getItem('klaim_choco_magma')) {
@@ -500,7 +599,7 @@
         localStorage.setItem('klaim_choco_magma', 'sudah');
       }
       barisPesan.push("", "Mohon info ketersediaannya ya. Terima kasih!");
-      
+
       var urlTujuan = "https://wa.me" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(barisPesan.join("\n"));
       var link = document.createElement("a");
       link.href = urlTujuan;
@@ -516,6 +615,7 @@
         terapkanFilter();
       }, 1500);
     }
+
     muatKeranjangLokal();
     muatDataProduk();
   </script>
