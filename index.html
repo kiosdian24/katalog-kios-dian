@@ -127,7 +127,7 @@
       </div>
       <div class="nav-actions">
         <button id="btnInstallApp" class="btn-mini btn-mini-install" onclick="installAplikasi()">📲 Simpan Web</button>
-        <a href="https://wa.me" target="_blank" class="btn-mini">💬 WA</a>
+        <a href="https://wa.me/" target="_blank" class="btn-mini">💬 WA</a>
         <a href="https://grab.com" target="_blank" class="btn-mini">🛵 Grab</a>
       </div>
     </div>
@@ -143,7 +143,7 @@
         </div>
         <div class="banner-icon">🍦</div>
       </div>
-      <div class="banner-card banner-4" onclick="window.open('https://wa.me?text=Halo%20Kios%20Dian,%20saya%20mau%20daftar%20Member%20VIP', '_blank')">
+      <div class="banner-card banner-4" onclick="window.open('https://wa.me/?text=Halo%20Kios%20Dian,%20saya%20mau%20daftar%20Member%20VIP', '_blank')">
         <div>
           <span class="banner-tag">👑 MEMBER VIP KIOS DIAN</span>
           <h2>BELANJA DAPAT POIN 1%!</h2>
@@ -167,7 +167,7 @@
         </div>
         <div class="banner-icon">🛵</div>
       </div>
-      <div class="banner-card banner-2" onclick="window.open('https://wa.me', '_blank')">
+      <div class="banner-card banner-2" onclick="window.open('https://wa.me/', '_blank')">
         <div>
           <span class="banner-tag">💸 LAYANAN KEUANGAN</span>
           <h2>GRATIS ADMIN &lt; 50RB!</h2>
@@ -585,6 +585,8 @@
 
     function tutupModal() { document.getElementById('modalKeranjang').classList.remove('buka'); }
 
+    var URL_BRIDGE_KASIR = "https://script.google.com/macros/s/AKfycbyiUOYZQzjO4AInj5vFuESunWHIF3MZo_Cd0WY5TVUcBJpKmSoFcVzRqMkymmB8sX9V4w/exec";
+
     function kirimKeWhatsApp() {
       var nama = document.getElementById('namaPemesan').value.trim() || "Pelanggan";
       var catatan = document.getElementById('catatanPesanan').value.trim();
@@ -593,6 +595,8 @@
       var total = 0, barisPesan = ["Halo *KIOS DIAN*, saya mau pesan barang berikut:", "", "*Nama:* " + nama];
       if (catatan) { barisPesan.push("*Info:* " + catatan); }
       barisPesan.push("------------------------------");
+      
+      var daftarItemKirim = [];
       for (var i = 0; i < daftar.length; i++) {
         var hasilHitung = hitungSubtotalItemWeb(daftar[i]);
         var sub = hasilHitung.subtotal;
@@ -600,6 +604,13 @@
         total += sub;
         var infoPromoWa = hasilHitung.catatan ? (" [" + hasilHitung.catatan + "]") : "";
         barisPesan.push((i + 1) + ". " + daftar[i].nama + " (" + daftar[i].qty + " " + satuan + ")" + infoPromoWa + " = " + formatRupiah(sub));
+        
+        daftarItemKirim.push({
+          kode: daftar[i].kode,
+          nama: daftar[i].nama,
+          qty: daftar[i].qty,
+          satuan: satuan
+        });
       }
       barisPesan.push("------------------------------", "*TOTAL PESANAN: " + formatRupiah(total) + "*");
       if (total >= 50000 && !localStorage.getItem('klaim_choco_magma')) {
@@ -608,7 +619,24 @@
       }
       barisPesan.push("", "Mohon info ketersediaannya ya. Terima kasih!");
 
-      var urlTujuan = "https://wa.me" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(barisPesan.join("\n"));
+      // 1. Kirim otomatis ke Kotak Masuk Layar Kasir Kios Dian
+      var payloadKasir = {
+        id_order: "WEB-" + Date.now(),
+        waktu: new Date().toLocaleString('id-ID'),
+        nama: nama,
+        catatan: catatan || "-",
+        items: daftarItemKirim,
+        total: total
+      };
+      fetch(URL_BRIDGE_KASIR, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payloadKasir)
+      }).catch(function(err) { console.log("Bridge log:", err); });
+
+      // 2. Tetap buka WhatsApp sebagai notifikasi kedua ke Admin
+      var urlTujuan = "https://wa.me/" + NOMOR_WA_TOKO + "?text=" + encodeURIComponent(barisPesan.join("\n"));
       var link = document.createElement("a");
       link.href = urlTujuan;
       link.target = "_blank";
