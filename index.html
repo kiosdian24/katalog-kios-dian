@@ -194,10 +194,16 @@
       <div class="filter-tabs" id="filterTabs">
         <button id="btnTabPromo" class="tab-btn tab-promo" onclick="pilihKategori('promo', this)">🔥 Promo & Grosir</button>
         <button class="tab-btn active" onclick="pilihKategori('semua', this)">Semua</button>
-        <button class="tab-btn" onclick="pilihKategori('tersedia', this)">Ready Stok</button>
-        <button class="tab-btn" onclick="pilihKategori('minuman', this)">Kopi & Minuman</button>
-        <button class="tab-btn" onclick="pilihKategori('obat', this)">Obat</button>
-        <button class="tab-btn" onclick="pilihKategori('rokok', this)">Rokok</button>
+        <button class="tab-btn" onclick="pilihKategori('tersedia', this)">✅ Ready Stok</button>
+        <button class="tab-btn" onclick="pilihKategori('sembako', this)">🍚 Sembako & Dapur</button>
+        <button class="tab-btn" onclick="pilihKategori('mie', this)">🍜 Mie & Instan</button>
+        <button class="tab-btn" onclick="pilihKategori('minuman', this)">☕ Kopi & Minuman</button>
+        <button class="tab-btn" onclick="pilihKategori('snack', this)">🍪 Snack & Es Krim</button>
+        <button class="tab-btn" onclick="pilihKategori('obat', this)">💊 Obat</button>
+        <button class="tab-btn" onclick="pilihKategori('rokok', this)">🚬 Rokok</button>
+        <button class="tab-btn" onclick="pilihKategori('perawatan', this)">🧴 Sabun & Perawatan</button>
+        <button class="tab-btn" onclick="pilihKategori('rumah', this)">🧹 Kebutuhan Rumah</button>
+        <button class="tab-btn" onclick="pilihKategori('lainnya', this)">📦 Lainnya</button>
       </div>
     </div>
     <div id="daftarProduk" class="grid-produk">Memuat etalase Kios Dian...</div>
@@ -425,16 +431,34 @@
       tombol.classList.add('active');
       terapkanFilter();
     }
-    function cocokKategori(p) {
+    var POLA_KATEGORI = {
+      sembako: /beras|minyak|bimoli|sunco|sania|tropical|fortune|gula|gulaku|telur|terigu|segitiga biru|kecap|bango|abc|sedap|saus|saos|sambal|garam|royco|masako|sasa|ajinomoto|ladaku|desaku|santan|kara|mentega|blue band|margarin|tepung|kanji|tapioka|maizena/,
+      mie: /indomie|mie|mi |sedaap|sukses|pop mie|sarimi|supermi|intermi|sakura|sarden|kornet|bubur|energen|oat|quaker/,
+      minuman: /good day|tea|teh|kopi|coffee|kapal api|luwak|torabika|nescafe|indocafe|abc susu|extra joss|kuku bima|madurasa|vitacimin|aqua|le minerale|vit|cleo|ades|floridina|golda|pucuk|fanta|sprite|coca|pepsi|pocari|mizone|you c|yakult|susu|ultra|frisian|bendera|dancow|milo|indomilk|bear brand|marimas|nutrisari|jasjus|pop ice|chocolatos drink|beng beng drink/,
+      snack: /keripik|kripik|basreng|tik tak|biskuit|biscuit|wafer|tango|nabati|beng|oreo|roma|malkist|chitato|taro|lays|piattos|qtela|kusuka|cokelat|coklat|silverqueen|cadbury|permen|kopiko|relaxa|kiss|mentos|yupi|wall|walls|es krim|ice cream|choco magma|cornetto|paddle pop|feast|magnum ice|aice|glico/,
+      obat: /panadol|mixagrip|diapet|neozep|konidin|antimo|oskadon|koyo|salonpas|bodrex|contrexyn|paramex|decolgen|tolak angin|entrostop|promag|antangin|esemag|kayu putih|telon|obh|komix|hansaplas|betadine|alkohol|kapas|perban|balsem|geliga|vicks|freshcare|safe care|plossa|insto|rohto|sangobion|fatigon|hemaviton|imboost|cdr|redoxon/,
+      rokok: /kretek|filter|mild|sampoerna|djarum|marlboro|camel|lucky|magnum|gg|surya|signature|dji sam soe|juara|jazy|la |neslite|ten mild|rival|orbit|drava|harmoni|sukun|djava|brown|janaka|loyal|asy|hs|esse|dunhill|ardath|gudang garam|bentoel|star mild|class mild|u mild|avo|aroma|chief|galang/,
+      perawatan: /sabun|lifebuoy|nuvo|giv|lux|dettol|biore|shinzui|sampo|shampoo|sunsilk|clear|pantene|dove|head|rejoice|zinc|emergon|pasta gigi|odol|pepsodent|ciptadent|close up|sensodyne|sikat gigi|tisu|tissue|paseo|jolly|tessa|nice|pembalut|charm|laurier|softex|popok|pampers|mamypoko|sweety|bedak|my baby|cussons|minyak wangi|parfum|rexona|deodorant|pomade|gatsby|silet|gillette|cotton bud|pembersih wajah|garnier|ponds|wardah|scarlett/,
+      rumah: /deterjen|detergent|rinso|daia|soklin|so klin|attack|jaz1|boom|gentle gen|molto|downy|pewangi|pelicin|kispray|rapika|sunlight|mama lemon|ekonomi|wipol|super pell|vixal|harpic|baygon|hit|autan|soffell|obat nyamuk|korek|tokai|gas|lilin|baterai|abc baterai|alkaline|spons|sabut|plastik|kresek|kantong sampah|lakban|lem/
+    };
+
+    function deteksiKategoriUtama(p) {
       var teks = (String(p.nama || "") + " " + String(p.varian || "")).toLowerCase();
+      var daftarKunci = ["rokok", "obat", "mie", "minuman", "snack", "sembako", "perawatan", "rumah"];
+      for (var i = 0; i < daftarKunci.length; i++) {
+        var k = daftarKunci[i];
+        if (POLA_KATEGORI[k].test(teks)) return k;
+      }
+      return "lainnya";
+    }
+
+    function cocokKategori(p) {
       if (kategoriAktif === "promo") return cekInfoPromo(p) !== null;
       if (kategoriAktif === "semua") return true;
       if (kategoriAktif === "tersedia") return Number(p.stok) > 0;
-      if (kategoriAktif === "minuman") return /good day|tea|kopi|coffee|extra joss|kuku bima|madurasa|vitacimin/.test(teks);
-      if (kategoriAktif === "obat") return /panadol|mixagrip|diapet|neozep|konidin|antimo|oskadon|koyo|salonpas|bodrex|contrexyn|paramex|decolgen|tolak angin|entrostop|promag|antangin|esemag|kayu putih|obh|komix|hansaplas/.test(teks);
-      if (kategoriAktif === "rokok") return /kretek|filter|mild|sampoerna|djarum|marlboro|camel|lucky|magnum|gg|surya|signature|dji sam soe|juara|jazy|la |neslite|ten mild|rival|orbit|drava|harmoni|sukun|djava|brown|janaka|loyal|asy|hs/.test(teks);
-      return true;
+      return deteksiKategoriUtama(p) === kategoriAktif;
     }
+
     function terapkanFilter() {
       var kata = document.getElementById('inputCari').value.toLowerCase();
       var hasil = semuaProduk.filter(function(p) {
