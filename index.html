@@ -64,9 +64,13 @@
     .search-wrapper { position: relative; margin-bottom: 8px; }
     .search-wrapper input { width: 100%; padding: 10px 12px 10px 34px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: 13px; outline: none; }
     .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px; }
-    .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .filter-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .filter-tabs::-webkit-scrollbar { display: none; }
-    .tab-btn { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-subtle); padding: 6px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+    @media (min-width: 600px) {
+      .filter-tabs { flex-wrap: wrap; overflow-x: visible; gap: 7px; }
+    }
+    .tab-btn { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-subtle); padding: 6px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { border-color: #38BDF8; color: #F8FAFC; }
     .tab-btn.active { background: linear-gradient(135deg, #2563EB, #1D4ED8); color: white; border-color: transparent; }
     .tab-promo { background: rgba(239, 68, 68, 0.15); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.45); }
     .tab-promo.active { background: linear-gradient(135deg, #DC2626, #EA580C); color: #FFFFFF; border-color: transparent; }
@@ -432,21 +436,28 @@
       terapkanFilter();
     }
     var POLA_KATEGORI = {
-      sembako: /beras|minyak|bimoli|sunco|sania|tropical|fortune|gula|gulaku|telur|terigu|segitiga biru|kecap|bango|abc|sedap|saus|saos|sambal|garam|royco|masako|sasa|ajinomoto|ladaku|desaku|santan|kara|mentega|blue band|margarin|tepung|kanji|tapioka|maizena/,
-      mie: /indomie|mie|mi |sedaap|sukses|pop mie|sarimi|supermi|intermi|sakura|sarden|kornet|bubur|energen|oat|quaker/,
-      minuman: /good day|tea|teh|kopi|coffee|kapal api|luwak|torabika|nescafe|indocafe|abc susu|extra joss|kuku bima|madurasa|vitacimin|aqua|le minerale|vit|cleo|ades|floridina|golda|pucuk|fanta|sprite|coca|pepsi|pocari|mizone|you c|yakult|susu|ultra|frisian|bendera|dancow|milo|indomilk|bear brand|marimas|nutrisari|jasjus|pop ice|chocolatos drink|beng beng drink/,
-      snack: /keripik|kripik|basreng|tik tak|biskuit|biscuit|wafer|tango|nabati|beng|oreo|roma|malkist|chitato|taro|lays|piattos|qtela|kusuka|cokelat|coklat|silverqueen|cadbury|permen|kopiko|relaxa|kiss|mentos|yupi|wall|walls|es krim|ice cream|choco magma|cornetto|paddle pop|feast|magnum ice|aice|glico/,
-      obat: /panadol|mixagrip|diapet|neozep|konidin|antimo|oskadon|koyo|salonpas|bodrex|contrexyn|paramex|decolgen|tolak angin|entrostop|promag|antangin|esemag|kayu putih|telon|obh|komix|hansaplas|betadine|alkohol|kapas|perban|balsem|geliga|vicks|freshcare|safe care|plossa|insto|rohto|sangobion|fatigon|hemaviton|imboost|cdr|redoxon/,
-      rokok: /kretek|filter|mild|sampoerna|djarum|marlboro|camel|lucky|magnum|gg|surya|signature|dji sam soe|juara|jazy|la |neslite|ten mild|rival|orbit|drava|harmoni|sukun|djava|brown|janaka|loyal|asy|hs|esse|dunhill|ardath|gudang garam|bentoel|star mild|class mild|u mild|avo|aroma|chief|galang/,
-      perawatan: /sabun|lifebuoy|nuvo|giv|lux|dettol|biore|shinzui|sampo|shampoo|sunsilk|clear|pantene|dove|head|rejoice|zinc|emergon|pasta gigi|odol|pepsodent|ciptadent|close up|sensodyne|sikat gigi|tisu|tissue|paseo|jolly|tessa|nice|pembalut|charm|laurier|softex|popok|pampers|mamypoko|sweety|bedak|my baby|cussons|minyak wangi|parfum|rexona|deodorant|pomade|gatsby|silet|gillette|cotton bud|pembersih wajah|garnier|ponds|wardah|scarlett/,
-      rumah: /deterjen|detergent|rinso|daia|soklin|so klin|attack|jaz1|boom|gentle gen|molto|downy|pewangi|pelicin|kispray|rapika|sunlight|mama lemon|ekonomi|wipol|super pell|vixal|harpic|baygon|hit|autan|soffell|obat nyamuk|korek|tokai|gas|lilin|baterai|abc baterai|alkaline|spons|sabut|plastik|kresek|kantong sampah|lakban|lem/
+      rumah: /\b(baterai|batre|baterei|alkaline|deterjen|detergent|rinso|daia|soklin|so klin|attack|jaz1|boom|gentle gen|molto|downy|pewangi|pelicin|kispray|rapika|sunlight|mama lemon|ekonomi|wipol|super pell|vixal|harpic|baygon|hit|autan|soffell|obat nyamuk|korek|tokai|gas|lilin|spons|sabut|plastik|kresek|kantong sampah|lakban|lem|lampu|led|mitsuwa|sunsonic|gunting kuku|777|peniti|benang|jarum|amplop|pulpen|pensil|cutter)\b/,
+      perawatan: /\b(sabun|lifebuoy|nuvo|giv|lux|dettol|biore|shinzui|sampo|shampoo|sunsilk|clear|pantene|dove|head|rejoice|zinc|emergon|pasta gigi|odol|pepsodent|ciptadent|close up|sensodyne|sikat gigi|tisu|tissue|paseo|jolly|tessa|nice|pembalut|charm|laurier|softex|popok|pampers|mamypoko|sweety|bedak|my baby|cussons|minyak wangi|parfum|rexona|deodorant|pomade|gatsby|silet|gillette|cotton bud|kapas|garnier|ponds|wardah|scarlett)\b/,
+      rokok: /\b(kretek|filter|mild|sampoerna|djarum|marlboro|camel|lucky|magnum|gg|surya|signature|dji sam soe|juara|jazy|la|neslite|ten mild|rival|orbit|drava|harmoni|sukun|djava|brown|janaka|loyal|asy|hs|esse|dunhill|ardath|gudang garam|bentoel|star mild|class mild|u mild|avo|aroma|chief|galang)\b/,
+      obat: /\b(panadol|mixagrip|diapet|neozep|konidin|antimo|oskadon|koyo|salonpas|bodrex|contrexyn|paramex|decolgen|tolak angin|entrostop|promag|antangin|esemag|kayu putih|telon|obh|komix|hansaplas|betadine|alkohol|perban|balsem|geliga|vicks|freshcare|safe care|plossa|insto|rohto|sangobion|fatigon|hemaviton|imboost|cdr|redoxon)\b/,
+      mie: /\b(indomie|mie|mi|sedaap|sukses|pop mie|sarimi|supermi|intermi|sakura|sarden|kornet|bubur|energen|oat|quaker)\b/,
+      minuman: /\b(good day|tea|teh|kopi|coffee|kapal api|luwak|torabika|nescafe|indocafe|extra joss|kuku bima|madurasa|vitacimin|aqua|le minerale|vit|cleo|ades|floridina|golda|pucuk|fanta|sprite|coca|pepsi|pocari|mizone|you c|yakult|susu|ultra|frisian|bendera|dancow|milo|indomilk|bear brand|marimas|nutrisari|jasjus|pop ice|chocolatos drink|beng beng drink)\b/,
+      snack: /\b(keripik|kripik|basreng|siomay|tik tak|biskuit|biscuit|wafer|tango|nabati|beng|oreo|roma|malkist|chitato|taro|lays|piattos|qtela|kusuka|cokelat|coklat|silverqueen|cadbury|permen|kopiko|relaxa|kiss|mentos|yupi|wall|walls|es krim|ice cream|choco magma|cornetto|paddle pop|feast|aice|glico)\b/,
+      sembako: /\b(beras|minyak|bimoli|sunco|sania|tropical|fortune|gula|gulaku|telur|terigu|segitiga biru|kecap|bango|abc|sedap|saus|saos|sambal|garam|royco|masako|sasa|ajinomoto|ladaku|desaku|santan|kara|mentega|blue band|margarin|tepung|kanji|tapioka|maizena|bumbu)\b/
     };
 
     function deteksiKategoriUtama(p) {
-      var teks = (String(p.nama || "") + " " + String(p.varian || "")).toLowerCase();
-      var daftarKunci = ["rokok", "obat", "mie", "minuman", "snack", "sembako", "perawatan", "rumah"];
-      for (var i = 0; i < daftarKunci.length; i++) {
-        var k = daftarKunci[i];
+      if (p.kategori && String(p.kategori).trim() !== "") {
+        return String(p.kategori).trim().toLowerCase();
+      }
+      var teks = (String(p.nama || "") + " " + String(p.varian || ""))
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ");
+
+      // Prioritas ketat: Non-Makanan (Rumah & Perawatan) dicek PALING AWAL
+      var urutanPrioritas = ["rumah", "perawatan", "rokok", "obat", "mie", "minuman", "snack", "sembako"];
+      for (var i = 0; i < urutanPrioritas.length; i++) {
+        var k = urutanPrioritas[i];
         if (POLA_KATEGORI[k].test(teks)) return k;
       }
       return "lainnya";
